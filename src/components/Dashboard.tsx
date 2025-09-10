@@ -84,15 +84,15 @@ export function Dashboard() {
         const endDate = new Date(subscriptionEnd);
         const now = new Date();
         if (endDate > now) {
-          return { status: 'trial', color: 'bg-yellow-100 text-yellow-800', text: 'Período de Trial' };
+          return { status: 'trial', color: 'bg-warning/10 text-warning', text: 'Período de Trial' };
         }
       }
-      return { status: 'expired', color: 'bg-red-100 text-red-800', text: 'Assinatura Expirada' };
+      return { status: 'expired', color: 'bg-destructive/10 text-destructive', text: 'Assinatura Expirada' };
     }
     
     return { 
       status: 'active', 
-      color: 'bg-green-100 text-green-800', 
+      color: 'bg-success/10 text-success', 
       text: `Plano ${subscriptionTier === 'basic' ? 'Básico' : subscriptionTier === 'premium' ? 'Premium' : 'Enterprise'} Ativo` 
     };
   };
@@ -124,16 +124,16 @@ export function Dashboard() {
 
       {/* Subscription Alert */}
       {!subscribed && (
-        <Card className="border-l-4 border-l-yellow-500 bg-yellow-50">
+        <Card className="border-l-4 border-l-warning bg-warning/5">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Crown className="w-6 h-6 text-yellow-600" />
+                <Crown className="w-6 h-6 text-warning" />
                 <div>
-                  <h3 className="font-semibold text-yellow-800">
+                  <h3 className="font-semibold text-card-foreground">
                     {subscriptionStatus.status === 'trial' ? 'Aproveite seu período de trial!' : 'Assinatura necessária'}
                   </h3>
-                  <p className="text-yellow-700">
+                  <p className="text-muted-foreground">
                     {subscriptionStatus.status === 'trial' 
                       ? `Seu trial expira em ${subscriptionEnd ? new Date(subscriptionEnd).toLocaleDateString('pt-BR') : 'breve'}`
                       : 'Assine um plano para continuar usando o Sorriso Fácil'

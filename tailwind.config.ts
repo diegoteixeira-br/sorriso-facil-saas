@@ -57,6 +57,14 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        medical: {
+          50: "hsl(var(--medical-50))",
+          100: "hsl(var(--medical-100))",
+          500: "hsl(var(--medical-500))",
+          600: "hsl(var(--medical-600))",
+          700: "hsl(var(--medical-700))",
+          900: "hsl(var(--medical-900))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

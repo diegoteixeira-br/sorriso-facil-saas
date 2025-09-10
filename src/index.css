@@ -8,111 +8,120 @@ Cores profissionais para área da saúde com foco em confiança e modernidade.
 
 @layer base {
   :root {
-    /* Cores principais - Azul médico profissional */
-    --background: 248 250 252; /* slate-50 */
-    --foreground: 226 232 240; /* slate-200 */
+    /* Background e foreground principais */
+    --background: 248 250 252; /* slate-50 - fundo claro profissional */
+    --foreground: 30 41 59; /* slate-700 - texto principal */
 
     /* Cards e containers */
-    --card: 0 0% 100%; /* white */
-    --card-foreground: 51 65% 7%; /* slate-900 */
+    --card: 255 255 255; /* white - cards limpos */
+    --card-foreground: 30 41 59; /* slate-700 - texto em cards */
 
     /* Popovers e dropdowns */
-    --popover: 0 0% 100%;
-    --popover-foreground: 51 65% 7%;
+    --popover: 255 255 255;
+    --popover-foreground: 30 41 59;
 
-    /* Cor primária - Azul médico confiável */
-    --primary: 217 91% 60%; /* blue-500 */
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 213 94% 68%; /* blue-400 */
+    /* Sistema de cores médico profissional */
+    --primary: 59 130 246; /* blue-500 - azul médico confiável */
+    --primary-foreground: 255 255 255;
+    --primary-glow: 96 165 250; /* blue-400 - variação mais clara */
 
-    /* Cor secundária - Azul mais claro */
-    --secondary: 214 95% 93%; /* blue-50 */
-    --secondary-foreground: 217 91% 60%;
+    /* Cor secundária - tons neutros */
+    --secondary: 241 245 249; /* slate-100 - cinza claro */
+    --secondary-foreground: 30 41 59; /* slate-700 */
 
-    /* Cores neutras */
-    --muted: 220 14% 96%; /* slate-50 */
-    --muted-foreground: 215 16% 47%; /* slate-500 */
+    /* Cores neutras para textos e backgrounds */
+    --muted: 248 250 252; /* slate-50 */
+    --muted-foreground: 100 116 139; /* slate-500 */
 
-    /* Cor de destaque - Verde saúde */
-    --accent: 142 76% 36%; /* green-600 */
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 141 84% 93%; /* green-50 */
+    /* Cor de destaque - verde saúde (substituindo amarelo) */
+    --accent: 34 197 94; /* green-500 - verde profissional */
+    --accent-foreground: 255 255 255;
+    --accent-light: 240 253 244; /* green-50 */
 
-    /* Cores de estado */
-    --destructive: 0 72% 51%; /* red-500 */
-    --destructive-foreground: 0 0% 100%;
-    --warning: 43 96% 56%; /* yellow-400 */
-    --warning-foreground: 51 65% 7%;
-    --success: 142 76% 36%; /* green-600 */
-    --success-foreground: 0 0% 100%;
+    /* Cores de estado profissionais */
+    --destructive: 239 68 68; /* red-500 */
+    --destructive-foreground: 255 255 255;
+    --warning: 245 158 11; /* amber-500 - substitui amarelo forte */
+    --warning-foreground: 255 255 255;
+    --success: 34 197 94; /* green-500 */
+    --success-foreground: 255 255 255;
 
     /* Bordas e inputs */
-    --border: 220 13% 91%; /* slate-200 */
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
+    --border: 226 232 240; /* slate-200 */
+    --input: 226 232 240;
+    --ring: 59 130 246; /* blue-500 */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Cores específicas para área médica */
+    --medical-50: 239 246 255; /* blue-50 */
+    --medical-100: 219 234 254; /* blue-100 */
+    --medical-500: 59 130 246; /* blue-500 */
+    --medical-600: 37 99 235; /* blue-600 */
+    --medical-700: 29 78 216; /* blue-700 */
+    --medical-900: 30 58 138; /* blue-900 */
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 255 255 255;
+    --sidebar-foreground: 30 41 59;
+    --sidebar-primary: 59 130 246;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 241 245 249;
+    --sidebar-accent-foreground: 30 41 59;
+    --sidebar-border: 226 232 240;
+    --sidebar-ring: 59 130 246;
   }
 
   .dark {
-    --background: 222 47% 11%; /* slate-900 */
-    --foreground: 215 20% 65%; /* slate-400 */
+    --background: 15 23 42; /* slate-900 */
+    --foreground: 241 245 249; /* slate-100 */
 
-    --card: 224 71% 4%; /* slate-950 */
-    --card-foreground: 213 31% 91%; /* slate-100 */
+    --card: 2 6 23; /* slate-950 */
+    --card-foreground: 241 245 249; /* slate-100 */
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 2 6 23;
+    --popover-foreground: 241 245 249;
 
-    --primary: 217 91% 60%; /* blue-500 */
-    --primary-foreground: 222 47% 11%;
-    --primary-glow: 213 94% 68%;
+    --primary: 59 130 246; /* blue-500 */
+    --primary-foreground: 15 23 42;
+    --primary-glow: 96 165 250;
 
-    --secondary: 220 13% 18%; /* slate-800 */
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 30 41 59; /* slate-800 */
+    --secondary-foreground: 241 245 249;
 
-    --muted: 215 28% 17%; /* slate-800 */
-    --muted-foreground: 217 11% 65%; /* slate-400 */
+    --muted: 30 41 59; /* slate-800 */
+    --muted-foreground: 148 163 184; /* slate-400 */
 
-    --accent: 142 76% 36%; /* green-600 */
-    --accent-foreground: 213 31% 91%;
-    --accent-light: 142 84% 15%; /* green-900 */
+    --accent: 34 197 94; /* green-500 */
+    --accent-foreground: 241 245 249;
+    --accent-light: 6 78 59; /* green-900 */
 
-    --destructive: 0 63% 31%; /* red-900 */
-    --destructive-foreground: 213 31% 91%;
-    --warning: 48 96% 53%; /* yellow-300 */
-    --warning-foreground: 222 47% 11%;
-    --success: 142 76% 36%;
-    --success-foreground: 213 31% 91%;
+    --destructive: 127 29 29; /* red-900 */
+    --destructive-foreground: 241 245 249;
+    --warning: 217 119 6; /* amber-600 */
+    --warning-foreground: 241 245 249;
+    --success: 34 197 94;
+    --success-foreground: 241 245 249;
 
-    --border: 215 28% 17%; /* slate-800 */
-    --input: 215 28% 17%;
-    --ring: 217 91% 60%;
+    --border: 30 41 59; /* slate-800 */
+    --input: 30 41 59;
+    --ring: 59 130 246;
 
-    --sidebar-background: 224 71% 4%;
-    --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 215 28% 17%;
-    --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 215 28% 17%;
-    --sidebar-ring: 217 91% 60%;
+    --medical-50: 6 78 59; /* green-900 */
+    --medical-100: 30 41 59; /* slate-800 */
+    --medical-500: 59 130 246; /* blue-500 */
+    --medical-600: 37 99 235; /* blue-600 */
+    --medical-700: 29 78 216; /* blue-700 */
+    --medical-900: 30 58 138; /* blue-900 */
+
+    --sidebar-background: 2 6 23;
+    --sidebar-foreground: 241 245 249;
+    --sidebar-primary: 59 130 246;
+    --sidebar-primary-foreground: 15 23 42;
+    --sidebar-accent: 30 41 59;
+    --sidebar-accent-foreground: 241 245 249;
+    --sidebar-border: 30 41 59;
+    --sidebar-ring: 59 130 246;
   }
 }
 
