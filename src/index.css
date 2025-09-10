@@ -8,9 +8,9 @@ Paleta baseada em azuis médicos, verdes saúde e tons neutros profissionais.
 
 @layer base {
   :root {
-    /* Background e foreground principais - sempre branco */
-    --background: 255 255 255; /* white - fundo completamente branco */
-    --foreground: 30 41 59; /* slate-800 - texto profissional */
+    /* Background e foreground principais - cinza claro */
+    --background: 0 0% 94%; /* #F0F0F0 - fundo cinza claro */
+    --foreground: 0 0% 20%; /* #333333 - texto escuro */
 
     /* Cards e containers - tons limpos */
     --card: 255 255 255; /* white - cards sempre brancos */
@@ -20,9 +20,9 @@ Paleta baseada em azuis médicos, verdes saúde e tons neutros profissionais.
     --popover: 255 255 255;
     --popover-foreground: 30 41 59;
 
-    /* Primary - Azul médico profissional */
-    --primary: 37 99 235; /* blue-600 - azul médico confiável */
-    --primary-foreground: 255 255 255;
+    /* Primary - Azul do botão #007BFF */
+    --primary: 211 100% 50%; /* #007BFF - azul do botão */
+    --primary-foreground: 0 0% 100%; /* branco para texto do botão */
     --primary-glow: 59 130 246; /* blue-500 - variação mais clara */
 
     /* Secondary - Cinza neutro elegante */
@@ -133,7 +133,6 @@ Paleta baseada em azuis médicos, verdes saúde e tons neutros profissionais.
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-color: rgb(255, 255, 255);
   }
 }
 
