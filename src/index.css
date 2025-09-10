@@ -2,39 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Design System para Sistema Odontológico - Sorriso Fácil
+Cores profissionais para área da saúde com foco em confiança e modernidade.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Cores principais - Azul médico profissional */
+    --background: 248 250 252; /* slate-50 */
+    --foreground: 226 232 240; /* slate-200 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Cards e containers */
+    --card: 0 0% 100%; /* white */
+    --card-foreground: 51 65% 7%; /* slate-900 */
 
+    /* Popovers e dropdowns */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 51 65% 7%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Cor primária - Azul médico confiável */
+    --primary: 217 91% 60%; /* blue-500 */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 213 94% 68%; /* blue-400 */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Cor secundária - Azul mais claro */
+    --secondary: 214 95% 93%; /* blue-50 */
+    --secondary-foreground: 217 91% 60%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Cores neutras */
+    --muted: 220 14% 96%; /* slate-50 */
+    --muted-foreground: 215 16% 47%; /* slate-500 */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Cor de destaque - Verde saúde */
+    --accent: 142 76% 36%; /* green-600 */
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 141 84% 93%; /* green-50 */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Cores de estado */
+    --destructive: 0 72% 51%; /* red-500 */
+    --destructive-foreground: 0 0% 100%;
+    --warning: 43 96% 56%; /* yellow-400 */
+    --warning-foreground: 51 65% 7%;
+    --success: 142 76% 36%; /* green-600 */
+    --success-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Bordas e inputs */
+    --border: 220 13% 91%; /* slate-200 */
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
 
     --radius: 0.5rem;
 
@@ -56,41 +71,48 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222 47% 11%; /* slate-900 */
+    --foreground: 215 20% 65%; /* slate-400 */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 224 71% 4%; /* slate-950 */
+    --card-foreground: 213 31% 91%; /* slate-100 */
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 217 91% 60%; /* blue-500 */
+    --primary-foreground: 222 47% 11%;
+    --primary-glow: 213 94% 68%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 13% 18%; /* slate-800 */
+    --secondary-foreground: 213 31% 91%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 28% 17%; /* slate-800 */
+    --muted-foreground: 217 11% 65%; /* slate-400 */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 142 76% 36%; /* green-600 */
+    --accent-foreground: 213 31% 91%;
+    --accent-light: 142 84% 15%; /* green-900 */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%; /* red-900 */
+    --destructive-foreground: 213 31% 91%;
+    --warning: 48 96% 53%; /* yellow-300 */
+    --warning-foreground: 222 47% 11%;
+    --success: 142 76% 36%;
+    --success-foreground: 213 31% 91%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 215 28% 17%; /* slate-800 */
+    --input: 215 28% 17%;
+    --ring: 217 91% 60%;
+
+    --sidebar-background: 224 71% 4%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 215 28% 17%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -100,6 +122,62 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-card-foreground font-sans antialiased;
+  }
+}
+
+/* Gradientes personalizados para o sistema odontológico */
+@layer utilities {
+  .bg-gradient-medical {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+  }
+  
+  .bg-gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(var(--accent)) 100%);
+  }
+  
+  .bg-gradient-card {
+    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--secondary)) 100%);
+  }
+  
+  .shadow-medical {
+    box-shadow: 0 4px 20px -4px hsl(var(--primary) / 0.25);
+  }
+  
+  .shadow-success {
+    box-shadow: 0 4px 20px -4px hsl(var(--success) / 0.25);
+  }
+}
+
+/* Animações personalizadas */
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+  
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
