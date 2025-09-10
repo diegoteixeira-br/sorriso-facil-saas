@@ -14,7 +14,396 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agendamentos: {
+        Row: {
+          created_at: string
+          data_agendamento: string
+          duracao_minutos: number | null
+          id: string
+          lembrete_enviado: boolean | null
+          observacoes: string | null
+          paciente_id: string
+          procedimento: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_agendamento: string
+          duracao_minutos?: number | null
+          id?: string
+          lembrete_enviado?: boolean | null
+          observacoes?: string | null
+          paciente_id: string
+          procedimento?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_agendamento?: string
+          duracao_minutos?: number | null
+          id?: string
+          lembrete_enviado?: boolean | null
+          observacoes?: string | null
+          paciente_id?: string
+          procedimento?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anamnese: {
+        Row: {
+          alergias: string | null
+          created_at: string
+          diabetes: boolean | null
+          fumante: boolean | null
+          gravidez: boolean | null
+          id: string
+          medicamentos_uso: string | null
+          observacoes_medicas: string | null
+          paciente_id: string
+          pressao_arterial: string | null
+          problemas_cardiacos: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          alergias?: string | null
+          created_at?: string
+          diabetes?: boolean | null
+          fumante?: boolean | null
+          gravidez?: boolean | null
+          id?: string
+          medicamentos_uso?: string | null
+          observacoes_medicas?: string | null
+          paciente_id: string
+          pressao_arterial?: string | null
+          problemas_cardiacos?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          alergias?: string | null
+          created_at?: string
+          diabetes?: boolean | null
+          fumante?: boolean | null
+          gravidez?: boolean | null
+          id?: string
+          medicamentos_uso?: string | null
+          observacoes_medicas?: string | null
+          paciente_id?: string
+          pressao_arterial?: string | null
+          problemas_cardiacos?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamnese_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      odontograma: {
+        Row: {
+          created_at: string
+          dente: number
+          faces: Json | null
+          id: string
+          observacoes: string | null
+          paciente_id: string
+          procedimentos_realizados: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dente: number
+          faces?: Json | null
+          id?: string
+          observacoes?: string | null
+          paciente_id: string
+          procedimentos_realizados?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dente?: number
+          faces?: Json | null
+          id?: string
+          observacoes?: string | null
+          paciente_id?: string
+          procedimentos_realizados?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "odontograma_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamento_itens: {
+        Row: {
+          created_at: string
+          dente: number | null
+          id: string
+          observacoes: string | null
+          orcamento_id: string
+          preco_unitario: number
+          procedimento_id: string
+          quantidade: number | null
+        }
+        Insert: {
+          created_at?: string
+          dente?: number | null
+          id?: string
+          observacoes?: string | null
+          orcamento_id: string
+          preco_unitario: number
+          procedimento_id: string
+          quantidade?: number | null
+        }
+        Update: {
+          created_at?: string
+          dente?: number | null
+          id?: string
+          observacoes?: string | null
+          orcamento_id?: string
+          preco_unitario?: number
+          procedimento_id?: string
+          quantidade?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamento_itens_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamento_itens_procedimento_id_fkey"
+            columns: ["procedimento_id"]
+            isOneToOne: false
+            referencedRelation: "procedimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamentos: {
+        Row: {
+          created_at: string
+          desconto: number | null
+          id: string
+          numero_orcamento: string
+          observacoes: string | null
+          paciente_id: string
+          status: string | null
+          updated_at: string
+          validade_dias: number | null
+          valor_total: number | null
+        }
+        Insert: {
+          created_at?: string
+          desconto?: number | null
+          id?: string
+          numero_orcamento: string
+          observacoes?: string | null
+          paciente_id: string
+          status?: string | null
+          updated_at?: string
+          validade_dias?: number | null
+          valor_total?: number | null
+        }
+        Update: {
+          created_at?: string
+          desconto?: number | null
+          id?: string
+          numero_orcamento?: string
+          observacoes?: string | null
+          paciente_id?: string
+          status?: string | null
+          updated_at?: string
+          validade_dias?: number | null
+          valor_total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pacientes: {
+        Row: {
+          cpf: string | null
+          created_at: string
+          data_nascimento: string | null
+          email: string | null
+          endereco: string | null
+          estado_civil: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          profissao: string | null
+          responsavel: string | null
+          telefone: string | null
+          telefone_responsavel: string | null
+          updated_at: string
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          profissao?: string | null
+          responsavel?: string | null
+          telefone?: string | null
+          telefone_responsavel?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          profissao?: string | null
+          responsavel?: string | null
+          telefone?: string | null
+          telefone_responsavel?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pagamentos: {
+        Row: {
+          agendamento_id: string | null
+          asaas_payment_id: string | null
+          created_at: string
+          data_pagamento: string | null
+          data_vencimento: string | null
+          forma_pagamento: string
+          id: string
+          observacoes: string | null
+          orcamento_id: string | null
+          paciente_id: string
+          status: string | null
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          agendamento_id?: string | null
+          asaas_payment_id?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento?: string | null
+          forma_pagamento: string
+          id?: string
+          observacoes?: string | null
+          orcamento_id?: string | null
+          paciente_id: string
+          status?: string | null
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          agendamento_id?: string | null
+          asaas_payment_id?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento?: string | null
+          forma_pagamento?: string
+          id?: string
+          observacoes?: string | null
+          orcamento_id?: string | null
+          paciente_id?: string
+          status?: string | null
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_agendamento_id_fkey"
+            columns: ["agendamento_id"]
+            isOneToOne: false
+            referencedRelation: "agendamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      procedimentos: {
+        Row: {
+          ativo: boolean | null
+          categoria: string | null
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          preco_base: number | null
+          tempo_estimado: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          preco_base?: number | null
+          tempo_estimado?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          preco_base?: number | null
+          tempo_estimado?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
