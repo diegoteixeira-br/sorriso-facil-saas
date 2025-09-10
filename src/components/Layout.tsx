@@ -1,14 +1,22 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const { signOut, subscriptionTier, subscribed } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -29,13 +37,21 @@ export function Layout({ children }: LayoutProps) {
             </div>
             
             <div className="flex items-center gap-3">
+              {subscribed && subscriptionTier && (
+                <Badge variant="secondary" className="bg-medical-100 text-medical-700">
+                  {subscriptionTier === 'basic' && 'Básico'}
+                  {subscriptionTier === 'premium' && 'Premium'}
+                  {subscriptionTier === 'enterprise' && 'Enterprise'}
+                </Badge>
+              )}
+              
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-4 h-4" />
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
               </Button>
               
-              <Button variant="ghost" size="icon">
-                <User className="w-4 h-4" />
+              <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </header>

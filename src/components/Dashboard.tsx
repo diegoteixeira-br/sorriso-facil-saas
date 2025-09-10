@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Users, 
   Calendar, 
@@ -8,8 +9,14 @@ import {
   Clock,
   CheckCircle,
   Plus,
-  ArrowUpRight
+  ArrowUpRight,
+  CreditCard,
+  Crown
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface StatCardProps {
   title: string;
@@ -44,12 +51,53 @@ function StatCard({ title, value, change, icon: Icon, trend = "neutral" }: StatC
 }
 
 export function Dashboard() {
+  const { subscribed, subscriptionTier, subscriptionEnd, checkSubscription } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
+
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Error accessing customer portal:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível acessar o portal de assinatura",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getSubscriptionStatus = () => {
+    if (!subscribed) {
+      if (subscriptionEnd) {
+        const endDate = new Date(subscriptionEnd);
+        const now = new Date();
+        if (endDate > now) {
+          return { status: 'trial', color: 'bg-yellow-100 text-yellow-800', text: 'Período de Trial' };
+        }
+      }
+      return { status: 'expired', color: 'bg-red-100 text-red-800', text: 'Assinatura Expirada' };
+    }
+    
+    return { 
+      status: 'active', 
+      color: 'bg-green-100 text-green-800', 
+      text: `Plano ${subscriptionTier === 'basic' ? 'Básico' : subscriptionTier === 'premium' ? 'Premium' : 'Enterprise'} Ativo` 
+    };
+  };
+
+  const subscriptionStatus = getSubscriptionStatus();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -59,7 +107,10 @@ export function Dashboard() {
           <h1 className="text-3xl font-bold text-card-foreground">Dashboard</h1>
           <p className="text-muted-foreground capitalize">{today}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
+          <Badge className={subscriptionStatus.color}>
+            {subscriptionStatus.text}
+          </Badge>
           <Button className="bg-gradient-medical shadow-medical">
             <Plus className="w-4 h-4 mr-2" />
             Novo Paciente
@@ -70,6 +121,71 @@ export function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Subscription Alert */}
+      {!subscribed && (
+        <Card className="border-l-4 border-l-yellow-500 bg-yellow-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Crown className="w-6 h-6 text-yellow-600" />
+                <div>
+                  <h3 className="font-semibold text-yellow-800">
+                    {subscriptionStatus.status === 'trial' ? 'Aproveite seu período de trial!' : 'Assinatura necessária'}
+                  </h3>
+                  <p className="text-yellow-700">
+                    {subscriptionStatus.status === 'trial' 
+                      ? `Seu trial expira em ${subscriptionEnd ? new Date(subscriptionEnd).toLocaleDateString('pt-BR') : 'breve'}`
+                      : 'Assine um plano para continuar usando o Sorriso Fácil'
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={checkSubscription}
+                >
+                  Atualizar Status
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => navigate('/pricing')}
+                  className="bg-medical-600 hover:bg-medical-700"
+                >
+                  Ver Planos
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Subscription Management */}
+      {subscribed && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CreditCard className="w-6 h-6 text-medical-600" />
+                <div>
+                  <h3 className="font-semibold">Gerenciar Assinatura</h3>
+                  <p className="text-muted-foreground">
+                    Altere seu plano, método de pagamento ou cancele sua assinatura
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={handleManageSubscription}
+              >
+                Gerenciar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
