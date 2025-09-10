@@ -9,7 +9,7 @@ Cores profissionais para área da saúde com foco em confiança e modernidade.
 @layer base {
   :root {
     /* Background e foreground principais - tons muito suaves */
-    --background: 250 251 252; /* gray-50 - fundo muito claro e confortável */
+    --background: 255 255 255; /* white - fundo completamente branco */
     --foreground: 15 23 42; /* slate-900 - texto escuro para contraste */
 
     /* Cards e containers */
