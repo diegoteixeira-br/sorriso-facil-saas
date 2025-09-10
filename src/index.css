@@ -2,89 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design System para Sistema Odontológico - Sorriso Fácil
-Cores profissionais para área da saúde com foco em confiança e modernidade.
+/* Sistema Profissional Odontológico - Cores Elegantes e Médicas
+Paleta baseada em azuis médicos, verdes saúde e tons neutros profissionais.
 */
 
 @layer base {
   :root {
-    /* Background e foreground principais - tons muito suaves */
+    /* Background e foreground principais - sempre branco */
     --background: 255 255 255; /* white - fundo completamente branco */
-    --foreground: 15 23 42; /* slate-900 - texto escuro para contraste */
+    --foreground: 30 41 59; /* slate-800 - texto profissional */
 
-    /* Cards e containers */
-    --card: 255 255 255; /* white - cards limpos */
-    --card-foreground: 15 23 42; /* slate-900 - texto em cards */
+    /* Cards e containers - tons limpos */
+    --card: 255 255 255; /* white - cards sempre brancos */
+    --card-foreground: 30 41 59; /* slate-800 - texto legível */
 
     /* Popovers e dropdowns */
     --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
+    --popover-foreground: 30 41 59;
 
-    /* Sistema de cores médico profissional - azul suave */
-    --primary: 14 165 233; /* sky-500 - azul suave e profissional */
+    /* Primary - Azul médico profissional */
+    --primary: 37 99 235; /* blue-600 - azul médico confiável */
     --primary-foreground: 255 255 255;
-    --primary-glow: 56 189 248; /* sky-400 - variação mais clara */
+    --primary-glow: 59 130 246; /* blue-500 - variação mais clara */
 
-    /* Cor secundária - tons neutros muito suaves */
-    --secondary: 248 250 252; /* slate-50 - cinza muito claro */
-    --secondary-foreground: 15 23 42; /* slate-900 */
+    /* Secondary - Cinza neutro elegante */
+    --secondary: 241 245 249; /* slate-100 - cinza muito suave */
+    --secondary-foreground: 30 41 59; /* slate-800 */
 
-    /* Cores neutras para textos e backgrounds */
-    --muted: 248 250 252; /* slate-50 */
-    --muted-foreground: 71 85 105; /* slate-600 */
+    /* Muted - Tons suaves para backgrounds */
+    --muted: 248 250 252; /* slate-50 - muito suave */
+    --muted-foreground: 100 116 139; /* slate-500 - texto secundário */
 
-    /* Cor de destaque - verde saúde suave */
-    --accent: 16 185 129; /* emerald-500 - verde suave e profissional */
+    /* Accent - Verde saúde profissional */
+    --accent: 34 197 94; /* green-500 - verde médico confiável */
     --accent-foreground: 255 255 255;
-    --accent-light: 236 253 245; /* emerald-50 */
+    --accent-light: 240 253 244; /* green-50 */
 
-    /* Cores de estado profissionais */
-    --destructive: 220 38 38; /* red-600 - vermelho mais suave */
+    /* States - Cores profissionais de estado */
+    --destructive: 239 68 68; /* red-500 - vermelho médico */
     --destructive-foreground: 255 255 255;
-    --warning: 245 101 101; /* red-400 - vermelho suave para avisos */
+    --warning: 245 158 11; /* amber-500 - laranja médico para avisos */
     --warning-foreground: 255 255 255;
-    --success: 16 185 129; /* emerald-500 */
+    --success: 34 197 94; /* green-500 - verde saúde */
     --success-foreground: 255 255 255;
 
-    /* Bordas e inputs */
-    --border: 241 245 249; /* slate-100 - bordas muito suaves */
-    --input: 248 250 252; /* slate-50 - inputs claros */
-    --ring: 14 165 233; /* sky-500 */
+    /* Borders e inputs - tons muito suaves */
+    --border: 226 232 240; /* slate-200 - bordas suaves */
+    --input: 248 250 252; /* slate-50 - inputs limpos */
+    --ring: 37 99 235; /* blue-600 - focus ring */
 
-    --radius: 0.75rem; /* bordas mais arredondadas */
+    --radius: 0.5rem; /* bordas médicas suaves */
 
-    /* Cores específicas para área médica - tons suaves */
-    --medical-50: 240 249 255; /* sky-50 */
-    --medical-100: 224 242 254; /* sky-100 */
-    --medical-500: 14 165 233; /* sky-500 */
-    --medical-600: 2 132 199; /* sky-600 */
-    --medical-700: 3 105 161; /* sky-700 */
-    --medical-900: 12 74 110; /* sky-900 */
+    /* Cores específicas para sistema médico */
+    --medical-50: 239 246 255; /* blue-50 */
+    --medical-100: 219 234 254; /* blue-100 */
+    --medical-500: 37 99 235; /* blue-600 */
+    --medical-600: 29 78 216; /* blue-700 */
+    --medical-700: 30 64 175; /* blue-800 */
+    --medical-900: 30 58 138; /* blue-900 */
 
     /* Sidebar */
+    /* Sidebar - tons profissionais */
     --sidebar-background: 255 255 255;
-    --sidebar-foreground: 15 23 42;
-    --sidebar-primary: 14 165 233;
+    --sidebar-foreground: 30 41 59;
+    --sidebar-primary: 37 99 235;
     --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 248 250 252;
-    --sidebar-accent-foreground: 15 23 42;
-    --sidebar-border: 241 245 249;
-    --sidebar-ring: 14 165 233;
+    --sidebar-accent: 241 245 249;
+    --sidebar-accent-foreground: 30 41 59;
+    --sidebar-border: 226 232 240;
+    --sidebar-ring: 37 99 235;
   }
 
   .dark {
-    --background: 3 7 18; /* slate-950 - muito escuro */
+    --background: 8 15 26; /* slate-950 - muito escuro e profissional */
     --foreground: 248 250 252; /* slate-50 */
 
-    --card: 15 23 42; /* slate-900 */
+    --card: 15 23 42; /* slate-900 - cards escuros */
     --card-foreground: 248 250 252; /* slate-50 */
 
     --popover: 15 23 42;
     --popover-foreground: 248 250 252;
 
-    --primary: 56 189 248; /* sky-400 - mais claro no escuro */
-    --primary-foreground: 3 7 18;
-    --primary-glow: 125 211 252;
+    --primary: 59 130 246; /* blue-500 - azul médico no escuro */
+    --primary-foreground: 255 255 255;
+    --primary-glow: 96 165 250; /* blue-400 */
 
     --secondary: 30 41 59; /* slate-800 */
     --secondary-foreground: 248 250 252;
@@ -92,36 +93,36 @@ Cores profissionais para área da saúde com foco em confiança e modernidade.
     --muted: 30 41 59; /* slate-800 */
     --muted-foreground: 148 163 184; /* slate-400 */
 
-    --accent: 52 211 153; /* emerald-400 */
-    --accent-foreground: 248 250 252;
-    --accent-light: 6 78 59; /* emerald-900 */
+    --accent: 74 222 128; /* green-400 - verde saúde no escuro */
+    --accent-foreground: 15 23 42;
+    --accent-light: 20 83 45; /* green-800 */
 
-    --destructive: 248 113 113; /* red-400 - mais suave no escuro */
+    --destructive: 248 113 113; /* red-400 */
     --destructive-foreground: 248 250 252;
-    --warning: 252 165 165; /* red-300 - muito suave no escuro */
+    --warning: 251 191 36; /* amber-400 - laranja suave no escuro */
     --warning-foreground: 15 23 42;
-    --success: 52 211 153;
-    --success-foreground: 248 250 252;
+    --success: 74 222 128; /* green-400 */
+    --success-foreground: 15 23 42;
 
     --border: 30 41 59; /* slate-800 */
     --input: 30 41 59;
-    --ring: 56 189 248;
+    --ring: 59 130 246;
 
-    --medical-50: 12 74 110; /* sky-900 */
+    --medical-50: 30 58 138; /* blue-900 */
     --medical-100: 30 41 59; /* slate-800 */
-    --medical-500: 56 189 248; /* sky-400 */
-    --medical-600: 14 165 233; /* sky-500 */
-    --medical-700: 2 132 199; /* sky-600 */
-    --medical-900: 12 74 110; /* sky-900 */
+    --medical-500: 59 130 246; /* blue-500 */
+    --medical-600: 37 99 235; /* blue-600 */
+    --medical-700: 29 78 216; /* blue-700 */
+    --medical-900: 30 58 138; /* blue-900 */
 
     --sidebar-background: 15 23 42;
     --sidebar-foreground: 248 250 252;
-    --sidebar-primary: 56 189 248;
-    --sidebar-primary-foreground: 3 7 18;
+    --sidebar-primary: 59 130 246;
+    --sidebar-primary-foreground: 255 255 255;
     --sidebar-accent: 30 41 59;
     --sidebar-accent-foreground: 248 250 252;
     --sidebar-border: 30 41 59;
-    --sidebar-ring: 56 189 248;
+    --sidebar-ring: 59 130 246;
   }
 }
 
@@ -131,30 +132,35 @@ Cores profissionais para área da saúde com foco em confiança e modernidade.
   }
 
   body {
-    @apply bg-background text-card-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased;
+    background-color: rgb(255, 255, 255);
   }
 }
 
-/* Gradientes personalizados para o sistema odontológico */
+/* Gradientes profissionais para sistema médico */
 @layer utilities {
   .bg-gradient-medical {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+    background: linear-gradient(135deg, rgb(37 99 235) 0%, rgb(59 130 246) 100%);
   }
   
   .bg-gradient-success {
-    background: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(var(--accent)) 100%);
+    background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(74 222 128) 100%);
   }
   
   .bg-gradient-card {
-    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--secondary)) 100%);
+    background: linear-gradient(145deg, rgb(255 255 255) 0%, rgb(248 250 252) 100%);
   }
   
   .shadow-medical {
-    box-shadow: 0 4px 20px -4px hsl(var(--primary) / 0.25);
+    box-shadow: 0 8px 32px -8px rgb(37 99 235 / 0.3);
   }
   
   .shadow-success {
-    box-shadow: 0 4px 20px -4px hsl(var(--success) / 0.25);
+    box-shadow: 0 8px 32px -8px rgb(34 197 94 / 0.3);
+  }
+
+  .shadow-elegant {
+    box-shadow: 0 4px 24px -4px rgb(0 0 0 / 0.1);
   }
 }
 
