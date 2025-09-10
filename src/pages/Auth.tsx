@@ -6,37 +6,35 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [clinicName, setClinicName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const {
+    signIn,
+    signUp,
+    user
+  } = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     if (user) {
       navigate('/');
     }
   }, [user, navigate]);
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     await signIn(email, password);
     setLoading(false);
   };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     await signUp(email, password, clinicName);
     setLoading(false);
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+  return <div className="min-h-screen flex items-center justify-center p-4 bg-slate-500">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-card-foreground mb-2">Sorriso Fácil</h1>
@@ -44,47 +42,30 @@ const Auth = () => {
         </div>
 
         <Card className="shadow-lg border-0">
-          <CardHeader className="space-y-1">
+          <CardHeader className="space-y-1 bg-slate-700">
             <CardTitle className="text-2xl text-center text-card-foreground">Acesse sua conta</CardTitle>
             <CardDescription className="text-center text-muted-foreground">
               Entre com sua conta ou crie uma nova
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-slate-50">
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Entrar</TabsTrigger>
-                <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-gray-50">
+                <TabsTrigger value="signin" className="text-zinc-950 text-base bg-green-600 hover:bg-green-500">Entrar</TabsTrigger>
+                <TabsTrigger value="signup" className="bg-cyan-900 hover:bg-cyan-800">Cadastrar</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
+                    <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Senha</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={loading}
-                  >
+                  <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Entrando...' : 'Entrar'}
                   </Button>
                 </form>
@@ -94,42 +75,17 @@ const Auth = () => {
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="clinic-name">Nome da Clínica</Label>
-                    <Input
-                      id="clinic-name"
-                      type="text"
-                      placeholder="Clínica Sorriso"
-                      value={clinicName}
-                      onChange={(e) => setClinicName(e.target.value)}
-                      required
-                    />
+                    <Input id="clinic-name" type="text" placeholder="Clínica Sorriso" value={clinicName} onChange={e => setClinicName(e.target.value)} required className="bg-indigo-600" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
+                    <Input id="signup-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required className="bg-orange-500" />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 bg-gray-50">
                     <Label htmlFor="signup-password">Senha</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
+                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="bg-slate-500" />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={loading}
-                  >
+                  <Button type="submit" disabled={loading} className="w-full text-zinc-950">
                     {loading ? 'Criando conta...' : 'Criar Conta (15 dias grátis)'}
                   </Button>
                 </form>
@@ -143,8 +99,6 @@ const Auth = () => {
           <p>Termos de Serviço e Política de Privacidade</p>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Auth;
