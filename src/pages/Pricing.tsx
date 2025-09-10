@@ -74,7 +74,7 @@ const Pricing = () => {
     features: ['Tudo do Premium', 'Múltiplas filiais', 'API personalizada', 'Relatórios customizados', 'Integração WhatsApp', 'Backup automático', 'Suporte 24/7', 'Gerente de conta dedicado'],
     popular: false
   }];
-  return <div className="min-h-screen py-12 px-4 bg-slate-600">
+  return <div className="min-h-screen py-12 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-card-foreground mb-4">

@@ -34,25 +34,25 @@ const Auth = () => {
     await signUp(email, password, clinicName);
     setLoading(false);
   };
-  return <div className="min-h-screen flex items-center justify-center p-4 bg-slate-500">
+  return <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-card-foreground mb-2">Sorriso Fácil</h1>
           <p className="text-muted-foreground">Sistema de Gestão para Clínicas Odontológicas</p>
         </div>
 
-        <Card className="shadow-lg border-0">
-          <CardHeader className="space-y-1 bg-slate-700">
-            <CardTitle className="text-2xl text-center text-card-foreground">Acesse sua conta</CardTitle>
+        <Card className="shadow-elegant border-border">
+          <CardHeader className="space-y-1 bg-card">
+            <CardTitle className="text-2xl text-center text-foreground">Acesse sua conta</CardTitle>
             <CardDescription className="text-center text-muted-foreground">
               Entre com sua conta ou crie uma nova
             </CardDescription>
           </CardHeader>
-          <CardContent className="bg-slate-50">
+          <CardContent className="bg-card">
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-50">
-                <TabsTrigger value="signin" className="text-zinc-950 text-base bg-green-600 hover:bg-green-500">Entrar</TabsTrigger>
-                <TabsTrigger value="signup" className="bg-cyan-900 hover:bg-cyan-800">Cadastrar</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-secondary">
+                <TabsTrigger value="signin" className="text-secondary-foreground">Entrar</TabsTrigger>
+                <TabsTrigger value="signup" className="text-secondary-foreground">Cadastrar</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
@@ -75,17 +75,17 @@ const Auth = () => {
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="clinic-name">Nome da Clínica</Label>
-                    <Input id="clinic-name" type="text" placeholder="Clínica Sorriso" value={clinicName} onChange={e => setClinicName(e.target.value)} required className="bg-indigo-600" />
+                    <Input id="clinic-name" type="text" placeholder="Clínica Sorriso" value={clinicName} onChange={e => setClinicName(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
-                    <Input id="signup-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required className="bg-orange-500" />
+                    <Input id="signup-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                   </div>
-                  <div className="space-y-2 bg-gray-50">
+                  <div className="space-y-2">
                     <Label htmlFor="signup-password">Senha</Label>
-                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="bg-slate-500" />
+                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
                   </div>
-                  <Button type="submit" disabled={loading} className="w-full text-zinc-950">
+                  <Button type="submit" disabled={loading} className="w-full">
                     {loading ? 'Criando conta...' : 'Criar Conta (15 dias grátis)'}
                   </Button>
                 </form>
