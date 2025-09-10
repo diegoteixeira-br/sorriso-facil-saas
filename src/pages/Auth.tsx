@@ -36,17 +36,17 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-medical-50 to-medical-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-medical-900 mb-2">Sorriso Fácil</h1>
-          <p className="text-medical-600">Sistema de Gestão para Clínicas Odontológicas</p>
+          <h1 className="text-3xl font-bold text-card-foreground mb-2">Sorriso Fácil</h1>
+          <p className="text-muted-foreground">Sistema de Gestão para Clínicas Odontológicas</p>
         </div>
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-medical-900">Acesse sua conta</CardTitle>
-            <CardDescription className="text-center text-medical-600">
+            <CardTitle className="text-2xl text-center text-card-foreground">Acesse sua conta</CardTitle>
+            <CardDescription className="text-center text-muted-foreground">
               Entre com sua conta ou crie uma nova
             </CardDescription>
           </CardHeader>
@@ -138,7 +138,7 @@ const Auth = () => {
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 text-sm text-medical-600">
+        <div className="text-center mt-6 text-sm text-muted-foreground">
           <p>Ao criar uma conta, você concorda com nossos</p>
           <p>Termos de Serviço e Política de Privacidade</p>
         </div>

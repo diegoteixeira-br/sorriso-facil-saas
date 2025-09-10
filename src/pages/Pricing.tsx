@@ -98,13 +98,13 @@ const Pricing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-medical-50 to-medical-100 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-medical-900 mb-4">
+          <h1 className="text-4xl font-bold text-card-foreground mb-4">
             Escolha o plano ideal para sua clínica
           </h1>
-          <p className="text-xl text-medical-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Gerencie sua clínica odontológica com eficiência e profissionalismo
           </p>
         </div>
@@ -115,31 +115,31 @@ const Pricing = () => {
               key={plan.id} 
               className={`relative shadow-lg transition-all duration-300 hover:shadow-xl ${
                 plan.popular 
-                  ? 'border-2 border-medical-500 transform scale-105' 
-                  : 'border border-gray-200'
+                  ? 'border-2 border-primary transform scale-105' 
+                  : 'border border-border'
               }`}
             >
               {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-medical-500 text-white">
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
                   Mais Popular
                 </Badge>
               )}
               
               <CardHeader className="text-center pb-8">
                 <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 ${
-                  plan.popular ? 'bg-medical-100 text-medical-600' : 'bg-gray-100 text-gray-600'
+                  plan.popular ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                 }`}>
                   {plan.icon}
                 </div>
-                <CardTitle className="text-2xl font-bold text-medical-900">
+                <CardTitle className="text-2xl font-bold text-card-foreground">
                   {plan.name}
                 </CardTitle>
-                <CardDescription className="text-medical-600">
+                <CardDescription className="text-muted-foreground">
                   {plan.description}
                 </CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-medical-900">{plan.price}</span>
-                  <span className="text-medical-600">/mês</span>
+                  <span className="text-4xl font-bold text-card-foreground">{plan.price}</span>
+                  <span className="text-muted-foreground">/mês</span>
                 </div>
               </CardHeader>
 
@@ -147,8 +147,8 @@ const Pricing = () => {
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center">
-                      <Check className="w-5 h-5 text-medical-500 mr-3 flex-shrink-0" />
-                      <span className="text-medical-700">{feature}</span>
+                      <Check className="w-5 h-5 text-success mr-3 flex-shrink-0" />
+                      <span className="text-card-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -158,8 +158,8 @@ const Pricing = () => {
                   disabled={loading === plan.id}
                   className={`w-full ${
                     plan.popular 
-                      ? 'bg-medical-600 hover:bg-medical-700' 
-                      : 'bg-medical-500 hover:bg-medical-600'
+                      ? 'bg-primary hover:bg-primary/90' 
+                      : 'bg-primary/80 hover:bg-primary'
                   }`}
                 >
                   {loading === plan.id ? 'Processando...' : 'Assinar Agora'}
@@ -170,10 +170,10 @@ const Pricing = () => {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-medical-600 mb-4">
+          <p className="text-muted-foreground mb-4">
             Todos os planos incluem 15 dias grátis. Cancele a qualquer momento.
           </p>
-          <p className="text-sm text-medical-500">
+          <p className="text-sm text-muted-foreground">
             Dúvidas? Entre em contato conosco pelo email: suporte@sorrisofacil.com.br
           </p>
         </div>
