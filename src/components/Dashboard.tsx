@@ -84,7 +84,7 @@ export function Dashboard() {
         const endDate = new Date(subscriptionEnd);
         const now = new Date();
         if (endDate > now) {
-          return { status: 'trial', color: 'bg-warning/10 text-warning', text: 'Período de Trial' };
+          return { status: 'trial', color: 'bg-primary/10 text-primary', text: 'Período de Trial' };
         }
       }
       return { status: 'expired', color: 'bg-destructive/10 text-destructive', text: 'Assinatura Expirada' };
@@ -124,11 +124,11 @@ export function Dashboard() {
 
       {/* Subscription Alert */}
       {!subscribed && (
-        <Card className="border-l-4 border-l-warning bg-warning/5">
+        <Card className="border-l-4 border-l-primary bg-primary/5">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Crown className="w-6 h-6 text-warning" />
+                <Crown className="w-6 h-6 text-primary" />
                 <div>
                   <h3 className="font-semibold text-card-foreground">
                     {subscriptionStatus.status === 'trial' ? 'Aproveite seu período de trial!' : 'Assinatura necessária'}
@@ -250,7 +250,7 @@ export function Dashboard() {
                   <div className={`text-xs px-2 py-1 rounded-full ${
                     appointment.status === "Confirmado" 
                       ? "bg-success/10 text-success" 
-                      : "bg-warning/10 text-warning"
+                      : "bg-primary/10 text-primary"
                   }`}>
                     {appointment.status}
                   </div>
