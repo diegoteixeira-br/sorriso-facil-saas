@@ -98,7 +98,7 @@ const Pricing = () => {
                 <CardTitle className="text-2xl font-bold text-card-foreground">
                   {plan.name}
                 </CardTitle>
-                <CardDescription className="text-muted-foreground">
+                <CardDescription className="text-gray-600">
                   {plan.description}
                 </CardDescription>
                 <div className="mt-4">
