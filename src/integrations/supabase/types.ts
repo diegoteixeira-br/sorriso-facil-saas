@@ -26,6 +26,7 @@ export type Database = {
           procedimento: string | null
           status: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -38,6 +39,7 @@ export type Database = {
           procedimento?: string | null
           status?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -50,6 +52,7 @@ export type Database = {
           procedimento?: string | null
           status?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -213,6 +216,7 @@ export type Database = {
           paciente_id: string
           status: string | null
           updated_at: string
+          user_id: string | null
           validade_dias: number | null
           valor_total: number | null
         }
@@ -225,6 +229,7 @@ export type Database = {
           paciente_id: string
           status?: string | null
           updated_at?: string
+          user_id?: string | null
           validade_dias?: number | null
           valor_total?: number | null
         }
@@ -237,6 +242,7 @@ export type Database = {
           paciente_id?: string
           status?: string | null
           updated_at?: string
+          user_id?: string | null
           validade_dias?: number | null
           valor_total?: number | null
         }
@@ -266,6 +272,7 @@ export type Database = {
           telefone: string | null
           telefone_responsavel: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           cpf?: string | null
@@ -282,6 +289,7 @@ export type Database = {
           telefone?: string | null
           telefone_responsavel?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           cpf?: string | null
@@ -298,6 +306,7 @@ export type Database = {
           telefone?: string | null
           telefone_responsavel?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -315,6 +324,7 @@ export type Database = {
           paciente_id: string
           status: string | null
           updated_at: string
+          user_id: string | null
           valor: number
         }
         Insert: {
@@ -330,6 +340,7 @@ export type Database = {
           paciente_id: string
           status?: string | null
           updated_at?: string
+          user_id?: string | null
           valor: number
         }
         Update: {
@@ -345,6 +356,7 @@ export type Database = {
           paciente_id?: string
           status?: string | null
           updated_at?: string
+          user_id?: string | null
           valor?: number
         }
         Relationships: [
@@ -401,6 +413,81 @@ export type Database = {
           nome?: string
           preco_base?: number | null
           tempo_estimado?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          clinic_name: string
+          cnpj: string | null
+          created_at: string
+          id: string
+          phone: string | null
+          subscription_end: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clinic_name: string
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          phone?: string | null
+          subscription_end?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clinic_name?: string
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          phone?: string | null
+          subscription_end?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
