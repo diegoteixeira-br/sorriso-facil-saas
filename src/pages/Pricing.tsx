@@ -6,28 +6,34 @@ import { Check, Crown, Zap, Building } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
 const Pricing = () => {
   const [loading, setLoading] = useState<string | null>(null);
-  const { user, session } = useAuth();
-  const { toast } = useToast();
-
+  const {
+    user,
+    session
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const createCheckoutSession = async (plan: string) => {
     if (!user || !session) {
       toast({
         title: "Login necessário",
         description: "Faça login para assinar um plano",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setLoading(plan);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          plan
+        }
       });
-
       if (error) throw error;
 
       // Open Stripe checkout in a new tab
@@ -37,68 +43,38 @@ const Pricing = () => {
       toast({
         title: "Erro",
         description: "Não foi possível iniciar o checkout. Tente novamente.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(null);
     }
   };
-
-  const plans = [
-    {
-      id: 'basic',
-      name: 'Básico',
-      price: 'R$ 29,99',
-      description: 'Ideal para clínicas pequenas',
-      icon: <Zap className="w-6 h-6" />,
-      features: [
-        'Até 100 pacientes',
-        'Agenda básica',
-        'Prontuário eletrônico',
-        'Relatórios básicos',
-        'Suporte por email'
-      ],
-      popular: false
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      price: 'R$ 79,99',
-      description: 'Para clínicas em crescimento',
-      icon: <Crown className="w-6 h-6" />,
-      features: [
-        'Pacientes ilimitados',
-        'Agenda avançada',
-        'Odontograma completo',
-        'Gestão financeira completa',
-        'Relatórios avançados',
-        'Integração com Asaas',
-        'Suporte prioritário'
-      ],
-      popular: true
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: 'R$ 159,99',
-      description: 'Para grandes clínicas e redes',
-      icon: <Building className="w-6 h-6" />,
-      features: [
-        'Tudo do Premium',
-        'Múltiplas filiais',
-        'API personalizada',
-        'Relatórios customizados',
-        'Integração WhatsApp',
-        'Backup automático',
-        'Suporte 24/7',
-        'Gerente de conta dedicado'
-      ],
-      popular: false
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background py-12 px-4">
+  const plans = [{
+    id: 'basic',
+    name: 'Básico',
+    price: 'R$ 29,99',
+    description: 'Ideal para clínicas pequenas',
+    icon: <Zap className="w-6 h-6" />,
+    features: ['Até 100 pacientes', 'Agenda básica', 'Prontuário eletrônico', 'Relatórios básicos', 'Suporte por email'],
+    popular: false
+  }, {
+    id: 'premium',
+    name: 'Premium',
+    price: 'R$ 79,99',
+    description: 'Para clínicas em crescimento',
+    icon: <Crown className="w-6 h-6" />,
+    features: ['Pacientes ilimitados', 'Agenda avançada', 'Odontograma completo', 'Gestão financeira completa', 'Relatórios avançados', 'Integração com Asaas', 'Suporte prioritário'],
+    popular: true
+  }, {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 'R$ 159,99',
+    description: 'Para grandes clínicas e redes',
+    icon: <Building className="w-6 h-6" />,
+    features: ['Tudo do Premium', 'Múltiplas filiais', 'API personalizada', 'Relatórios customizados', 'Integração WhatsApp', 'Backup automático', 'Suporte 24/7', 'Gerente de conta dedicado'],
+    popular: false
+  }];
+  return <div className="min-h-screen py-12 px-4 bg-slate-600">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-card-foreground mb-4">
@@ -110,25 +86,13 @@ const Pricing = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan) => (
-            <Card 
-              key={plan.id} 
-              className={`relative shadow-lg transition-all duration-300 hover:shadow-xl ${
-                plan.popular 
-                  ? 'border-2 border-primary transform scale-105' 
-                  : 'border border-border'
-              }`}
-            >
-              {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
+          {plans.map(plan => <Card key={plan.id} className={`relative shadow-lg transition-all duration-300 hover:shadow-xl ${plan.popular ? 'border-2 border-primary transform scale-105' : 'border border-border'}`}>
+              {plan.popular && <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
                   Mais Popular
-                </Badge>
-              )}
+                </Badge>}
               
               <CardHeader className="text-center pb-8">
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 ${
-                  plan.popular ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                }`}>
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 ${plan.popular ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                   {plan.icon}
                 </div>
                 <CardTitle className="text-2xl font-bold text-card-foreground">
@@ -145,28 +109,17 @@ const Pricing = () => {
 
               <CardContent className="pt-0">
                 <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
+                  {plan.features.map((feature, index) => <li key={index} className="flex items-center">
                       <Check className="w-5 h-5 text-success mr-3 flex-shrink-0" />
                       <span className="text-card-foreground">{feature}</span>
-                    </li>
-                  ))}
+                    </li>)}
                 </ul>
 
-                <Button
-                  onClick={() => createCheckoutSession(plan.id)}
-                  disabled={loading === plan.id}
-                  className={`w-full ${
-                    plan.popular 
-                      ? 'bg-primary hover:bg-primary/90' 
-                      : 'bg-primary/80 hover:bg-primary'
-                  }`}
-                >
+                <Button onClick={() => createCheckoutSession(plan.id)} disabled={loading === plan.id} className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : 'bg-primary/80 hover:bg-primary'}`}>
                   {loading === plan.id ? 'Processando...' : 'Assinar Agora'}
                 </Button>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         <div className="text-center mt-12">
@@ -178,8 +131,6 @@ const Pricing = () => {
           </p>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Pricing;
