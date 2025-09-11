@@ -8,6 +8,8 @@ import Pacientes from "./pages/Pacientes";
 import Dentistas from "./pages/Dentistas";
 import Agenda from "./pages/Agenda";
 import Configuracoes from "./pages/Configuracoes";
+import Procedimentos from "./pages/Procedimentos";
+import Orcamentos from "./pages/Orcamentos";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
@@ -65,6 +67,20 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Agenda />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/procedimentos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Procedimentos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/orcamentos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Orcamentos />
                 </Layout>
               </ProtectedRoute>
             } />

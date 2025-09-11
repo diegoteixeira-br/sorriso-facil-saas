@@ -7,7 +7,8 @@ import {
   Settings,
   Heart,
   Stethoscope,
-  CalendarDays
+  CalendarDays,
+  ClipboardList
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -48,6 +49,12 @@ const menuItems = [
     url: "/agenda",
     icon: Calendar,
     group: "principal"
+  },
+  {
+    title: "Procedimentos",
+    url: "/procedimentos",
+    icon: ClipboardList,
+    group: "clinico"
   },
   {
     title: "Orçamentos",
