@@ -84,32 +84,98 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
   const renderTooth = (toothNumber: number, x: number, y: number, isUpper: boolean) => {
     const toothState = toothStates[toothNumber];
     const isSelected = selectedTooth === toothNumber;
+    const toothType = getToothType(toothNumber);
     
-    const width = 30;
-    const height = 25;
-    const centerX = x + width / 2;
+    const centerX = x + 15;
+    const toothY = isUpper ? y + 15 : y + 5;
+
+    // Cores baseadas no estado
+    const fillColor = isSelected ? "hsl(var(--primary) / 0.3)" : "white";
+    const strokeColor = isSelected ? "hsl(var(--primary))" : "hsl(var(--border))";
+    const strokeWidth = isSelected ? "2" : "1";
 
     return (
       <g key={toothNumber}>
-        {/* Retângulo simples para o dente */}
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          fill={isSelected ? "hsl(var(--primary) / 0.2)" : "white"}
-          stroke={isSelected ? "hsl(var(--primary))" : "hsl(var(--border))"}
-          strokeWidth={isSelected ? "2" : "1"}
-          className="cursor-pointer hover:fill-primary/10"
-          onClick={() => handleToothClick(toothNumber)}
-        />
+        {/* Diferentes formas para cada tipo de dente */}
+        {toothType === 'incisivo' && (
+          <g onClick={() => handleToothClick(toothNumber)} className="cursor-pointer">
+            {/* Forma de incisivo - retangular com topo arredondado */}
+            <path
+              d={`M ${x + 8} ${toothY + 20} 
+                  L ${x + 8} ${toothY + 8} 
+                  Q ${x + 8} ${toothY + 2} ${x + 15} ${toothY}
+                  Q ${x + 22} ${toothY + 2} ${x + 22} ${toothY + 8}
+                  L ${x + 22} ${toothY + 20}
+                  Z`}
+              fill={fillColor}
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+            />
+          </g>
+        )}
+        
+        {toothType === 'canino' && (
+          <g onClick={() => handleToothClick(toothNumber)} className="cursor-pointer">
+            {/* Forma de canino - pontiagudo */}
+            <path
+              d={`M ${x + 9} ${toothY + 22} 
+                  L ${x + 9} ${toothY + 12} 
+                  Q ${x + 9} ${toothY + 6} ${x + 15} ${toothY}
+                  Q ${x + 21} ${toothY + 6} ${x + 21} ${toothY + 12}
+                  L ${x + 21} ${toothY + 22}
+                  Z`}
+              fill={fillColor}
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+            />
+          </g>
+        )}
+        
+        {toothType === 'premolar' && (
+          <g onClick={() => handleToothClick(toothNumber)} className="cursor-pointer">
+            {/* Forma de pré-molar - quadrado com topos arredondados */}
+            <rect
+              x={x + 7}
+              y={toothY + 4}
+              width={16}
+              height={18}
+              rx="3"
+              fill={fillColor}
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+            />
+            {/* Cúspides */}
+            <circle cx={x + 11} cy={toothY + 6} r="2" fill={fillColor} stroke={strokeColor} strokeWidth="0.5"/>
+            <circle cx={x + 19} cy={toothY + 6} r="2" fill={fillColor} stroke={strokeColor} strokeWidth="0.5"/>
+          </g>
+        )}
+        
+        {toothType === 'molar' && (
+          <g onClick={() => handleToothClick(toothNumber)} className="cursor-pointer">
+            {/* Forma de molar - retangular com múltiplas cúspides */}
+            <rect
+              x={x + 6}
+              y={toothY + 5}
+              width={18}
+              height={17}
+              rx="2"
+              fill={fillColor}
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+            />
+            {/* Cúspides do molar */}
+            <circle cx={x + 10} cy={toothY + 7} r="1.5" fill={fillColor} stroke={strokeColor} strokeWidth="0.5"/>
+            <circle cx={x + 15} cy={toothY + 7} r="1.5" fill={fillColor} stroke={strokeColor} strokeWidth="0.5"/>
+            <circle cx={x + 20} cy={toothY + 7} r="1.5" fill={fillColor} stroke={strokeColor} strokeWidth="0.5"/>
+          </g>
+        )}
 
         {/* Número do dente */}
         <text
           x={centerX}
-          y={y + height / 2 + 3}
+          y={isUpper ? y + 5 : y + 45}
           textAnchor="middle"
-          fontSize="12"
+          fontSize="10"
           fill="hsl(var(--foreground))"
           className="pointer-events-none font-medium"
         >
@@ -119,8 +185,8 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
         {/* Indicador de faces selecionadas */}
         {toothState?.selected && (
           <circle
-            cx={x + width - 4}
-            cy={y + 4}
+            cx={x + 25}
+            cy={toothY + 2}
             r="3"
             fill="hsl(var(--primary))"
             className="pointer-events-none"
@@ -131,7 +197,7 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
   };
 
   const calculateToothSpacing = () => {
-    return 35; // Espaçamento fixo entre dentes
+    return 32; // Espaçamento fixo entre dentes
   };
 
   const renderArchSection = (teeth: number[], startX: number, y: number, isUpper: boolean) => {
@@ -147,26 +213,30 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
     <div className="w-full space-y-6">
       {/* Diagrama dos dentes */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Selecione o Dente</h3>
-        <p className="text-sm text-muted-foreground mb-4">
+        <h3 className="text-lg font-semibold mb-4">Odontograma - Seleção de Dentes</h3>
+        <p className="text-sm text-muted-foreground mb-6">
           Clique em um dente para selecionar. Clique novamente para desmarcar.
         </p>
         
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Arcada Superior */}
           <div>
             <h4 className="text-sm font-medium mb-3 text-muted-foreground">Arcada Superior</h4>
-            <svg width="100%" height="80" viewBox="0 0 580 80" className="border border-border rounded">
-              {renderArchSection(permanentTeeth.superior, 10, 20, true)}
-            </svg>
+            <div className="flex justify-center">
+              <svg width="550" height="60" viewBox="0 0 550 60" className="border border-border rounded bg-background">
+                {renderArchSection(permanentTeeth.superior, 15, 10, true)}
+              </svg>
+            </div>
           </div>
           
           {/* Arcada Inferior */}
           <div>
             <h4 className="text-sm font-medium mb-3 text-muted-foreground">Arcada Inferior</h4>
-            <svg width="100%" height="80" viewBox="0 0 580 80" className="border border-border rounded">
-              {renderArchSection(permanentTeeth.inferior, 10, 20, false)}
-            </svg>
+            <div className="flex justify-center">
+              <svg width="550" height="60" viewBox="0 0 550 60" className="border border-border rounded bg-background">
+                {renderArchSection(permanentTeeth.inferior, 15, 10, false)}
+              </svg>
+            </div>
           </div>
         </div>
       </Card>
