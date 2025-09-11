@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string
           data_agendamento: string
+          dentista_id: string | null
           duracao_minutos: number | null
           id: string
           lembrete_enviado: boolean | null
@@ -31,6 +32,7 @@ export type Database = {
         Insert: {
           created_at?: string
           data_agendamento: string
+          dentista_id?: string | null
           duracao_minutos?: number | null
           id?: string
           lembrete_enviado?: boolean | null
@@ -44,6 +46,7 @@ export type Database = {
         Update: {
           created_at?: string
           data_agendamento?: string
+          dentista_id?: string | null
           duracao_minutos?: number | null
           id?: string
           lembrete_enviado?: boolean | null
@@ -55,6 +58,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "agendamentos_dentista_id_fkey"
+            columns: ["dentista_id"]
+            isOneToOne: false
+            referencedRelation: "dentistas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "agendamentos_paciente_id_fkey"
             columns: ["paciente_id"]
@@ -116,6 +126,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dentistas: {
+        Row: {
+          created_at: string
+          cro: string
+          email: string | null
+          especialidade: string | null
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cro: string
+          email?: string | null
+          especialidade?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cro?: string
+          email?: string | null
+          especialidade?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      google_integrations: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          refresh_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          refresh_token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       odontograma: {
         Row: {
