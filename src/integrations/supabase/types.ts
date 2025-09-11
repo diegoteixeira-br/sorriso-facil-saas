@@ -163,36 +163,6 @@ export type Database = {
         }
         Relationships: []
       }
-      google_integrations: {
-        Row: {
-          access_token: string
-          created_at: string
-          expires_at: string
-          id: string
-          refresh_token: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          access_token: string
-          created_at?: string
-          expires_at: string
-          id?: string
-          refresh_token: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          access_token?: string
-          created_at?: string
-          expires_at?: string
-          id?: string
-          refresh_token?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       odontograma: {
         Row: {
           created_at: string
@@ -564,6 +534,42 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          google_access_token: string | null
+          google_calendar_enabled: boolean | null
+          google_client_id: string | null
+          google_client_secret: string | null
+          google_refresh_token: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          google_access_token?: string | null
+          google_calendar_enabled?: boolean | null
+          google_client_id?: string | null
+          google_client_secret?: string | null
+          google_refresh_token?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          google_access_token?: string | null
+          google_calendar_enabled?: boolean | null
+          google_client_id?: string | null
+          google_client_secret?: string | null
+          google_refresh_token?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

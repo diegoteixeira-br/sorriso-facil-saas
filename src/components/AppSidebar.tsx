@@ -38,6 +38,12 @@ const menuItems = [
     group: "principal"
   },
   {
+    title: "Dentistas",
+    url: "/dentistas",
+    icon: Stethoscope,
+    group: "principal"
+  },
+  {
     title: "Agenda",
     url: "/agenda",
     icon: Calendar,

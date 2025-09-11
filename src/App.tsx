@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Pacientes from "./pages/Pacientes";
+import Dentistas from "./pages/Dentistas";
+import Agenda from "./pages/Agenda";
+import Configuracoes from "./pages/Configuracoes";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
@@ -48,6 +51,27 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Pacientes />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/dentistas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dentistas />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/agenda" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Agenda />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/configuracoes" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Configuracoes />
                 </Layout>
               </ProtectedRoute>
             } />
