@@ -31,7 +31,11 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
   };
 
   const handleToothClick = (toothNumber: number) => {
-    setSelectedTooth(toothNumber);
+    if (selectedTooth === toothNumber) {
+      setSelectedTooth(null); // Desmarca se clicar no mesmo dente
+    } else {
+      setSelectedTooth(toothNumber);
+    }
   };
 
   const handleFaceSelect = (face: string) => {
@@ -141,24 +145,100 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
 
   return (
     <div className="w-full space-y-6">
-      {/* Diagrama dos dentes */}
+      {/* Imagem de referência profissional */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Odontograma de Referência</h3>
+        <div className="flex justify-center mb-4">
+          <img 
+            src="/lovable-uploads/daa2c721-a216-471a-a5b5-a8abd1628157.png" 
+            alt="Odontograma de Referência Profissional" 
+            className="max-w-full h-auto border border-border rounded-lg"
+          />
+        </div>
+        <p className="text-sm text-muted-foreground text-center">
+          Use esta referência para identificar os dentes e suas posições
+        </p>
+      </Card>
+
+      {/* Diagrama dos dentes simplificado */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Selecione o Dente</h3>
-        <div className="space-y-6">
+        <p className="text-sm text-muted-foreground mb-4">
+          Clique em um número para selecionar o dente. Clique novamente para desmarcar.
+        </p>
+        
+        <div className="space-y-8">
           {/* Arcada Superior */}
           <div>
             <h4 className="text-sm font-medium mb-3 text-muted-foreground">Arcada Superior</h4>
-            <svg width="100%" height="80" viewBox="0 0 580 80">
-              {renderArchSection(permanentTeeth.superior, 10, 20, true)}
-            </svg>
+            <div className="flex justify-center">
+              <div className="grid grid-cols-8 gap-2">
+                {permanentTeeth.superior.slice(0, 8).reverse().map((tooth) => (
+                  <Button
+                    key={tooth}
+                    variant={selectedTooth === tooth ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToothClick(tooth)}
+                    className="w-12 h-12 p-0 text-xs font-bold"
+                  >
+                    {tooth}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center mt-2">
+              <div className="grid grid-cols-8 gap-2">
+                {permanentTeeth.superior.slice(8).map((tooth) => (
+                  <Button
+                    key={tooth}
+                    variant={selectedTooth === tooth ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToothClick(tooth)}
+                    className="w-12 h-12 p-0 text-xs font-bold"
+                  >
+                    {tooth}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
+          
+          {/* Linha divisória */}
+          <div className="border-t border-border"></div>
           
           {/* Arcada Inferior */}
           <div>
             <h4 className="text-sm font-medium mb-3 text-muted-foreground">Arcada Inferior</h4>
-            <svg width="100%" height="80" viewBox="0 0 580 80">
-              {renderArchSection(permanentTeeth.inferior, 10, 20, false)}
-            </svg>
+            <div className="flex justify-center">
+              <div className="grid grid-cols-8 gap-2">
+                {permanentTeeth.inferior.slice(0, 8).reverse().map((tooth) => (
+                  <Button
+                    key={tooth}
+                    variant={selectedTooth === tooth ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToothClick(tooth)}
+                    className="w-12 h-12 p-0 text-xs font-bold"
+                  >
+                    {tooth}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center mt-2">
+              <div className="grid grid-cols-8 gap-2">
+                {permanentTeeth.inferior.slice(8).map((tooth) => (
+                  <Button
+                    key={tooth}
+                    variant={selectedTooth === tooth ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToothClick(tooth)}
+                    className="w-12 h-12 p-0 text-xs font-bold"
+                  >
+                    {tooth}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </Card>
@@ -186,7 +266,15 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
             })}
           </div>
           
-          {/* Faces selecionadas */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedTooth(null)}
+              size="sm"
+            >
+              Desmarcar Dente
+            </Button>
+          </div>
           {toothStates[selectedTooth]?.selected && (
             <div className="mt-4 p-3 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">Faces selecionadas:</p>
