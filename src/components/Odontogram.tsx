@@ -264,15 +264,6 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
             })}
           </div>
           
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setSelectedTooth(null)}
-              size="sm"
-            >
-              Desmarcar Dente
-            </Button>
-          </div>
           {toothStates[selectedTooth]?.selected && (
             <div className="mt-4 p-3 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">Faces selecionadas:</p>
