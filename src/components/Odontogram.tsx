@@ -72,111 +72,152 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
 
   const renderTooth = (toothNumber: number, x: number, y: number, isUpper: boolean) => {
     const toothState = toothStates[toothNumber];
-    const baseSize = 24;
+    const toothType = getToothType(toothNumber);
     
-    // Layout profissional: 3 quadrados em linha horizontal
-    const squareSize = 6;
-    const spacing = 8;
-    const totalWidth = (squareSize * 3) + (spacing * 2);
-    const startX = x + (baseSize - totalWidth) / 2;
-    const centerY = y + baseSize / 2 - squareSize / 2;
+    // Dimensões do dente baseadas no tipo
+    const dimensions = {
+      incisivo: { width: 20, height: 28 },
+      canino: { width: 18, height: 32 },
+      premolar: { width: 22, height: 26 },
+      molar: { width: 26, height: 24 }
+    };
+
+    const { width, height } = dimensions[toothType];
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
 
     return (
       <g key={toothNumber}>
-        {/* Fundo do dente */}
-        <rect
-          x={x}
-          y={y}
-          width={baseSize}
-          height={baseSize}
-          fill="hsl(var(--card))"
-          stroke="hsl(var(--border))"
-          strokeWidth="1"
-          rx="2"
-        />
+        {/* Formato realista do dente */}
+        {toothType === 'incisivo' && (
+          <path
+            d={`M ${x + 2} ${y + height} 
+                L ${x + 2} ${y + 8} 
+                Q ${x + 2} ${y + 2} ${x + width/2} ${y}
+                Q ${x + width - 2} ${y + 2} ${x + width - 2} ${y + 8}
+                L ${x + width - 2} ${y + height}
+                Z`}
+            fill="white"
+            stroke="#333"
+            strokeWidth="1"
+            className="cursor-pointer"
+          />
+        )}
+        
+        {toothType === 'canino' && (
+          <path
+            d={`M ${x + 3} ${y + height} 
+                L ${x + 3} ${y + 10} 
+                Q ${x + 3} ${y + 4} ${x + width/2} ${y}
+                Q ${x + width - 3} ${y + 4} ${x + width - 3} ${y + 10}
+                L ${x + width - 3} ${y + height}
+                Z`}
+            fill="white"
+            stroke="#333"
+            strokeWidth="1"
+            className="cursor-pointer"
+          />
+        )}
+        
+        {(toothType === 'premolar' || toothType === 'molar') && (
+          <rect
+            x={x + 2}
+            y={y + 4}
+            width={width - 4}
+            height={height - 4}
+            rx="4"
+            fill="white"
+            stroke="#333"
+            strokeWidth="1"
+            className="cursor-pointer"
+          />
+        )}
 
-        {/* Face Vestibular (primeiro quadrado) */}
+        {/* Divisões das faces do dente */}
+        
+        {/* Face Vestibular (frente) */}
         <rect
-          x={startX}
-          y={centerY}
-          width={squareSize}
-          height={squareSize}
-          fill={toothState?.faces?.vestibular ? "hsl(var(--primary))" : "white"}
-          stroke="hsl(var(--border))"
-          strokeWidth="0.8"
-          className="cursor-pointer hover:fill-primary/30 transition-colors"
+          x={x + 2}
+          y={y + 4}
+          width={(width - 4) / 3}
+          height={height - 8}
+          fill={toothState?.faces?.vestibular ? "hsl(var(--primary))" : "transparent"}
+          stroke="rgba(0,0,0,0.2)"
+          strokeWidth="0.5"
+          className="cursor-pointer hover:fill-primary/20"
           onClick={(e) => handleFaceClick(toothNumber, 'vestibular', e)}
         />
         
-        {/* Face Oclusal (segundo quadrado) */}
+        {/* Face Oclusal/Incisal (topo) */}
         <rect
-          x={startX + squareSize + spacing}
-          y={centerY}
-          width={squareSize}
-          height={squareSize}
-          fill={toothState?.faces?.oclusal ? "hsl(var(--primary))" : "white"}
-          stroke="hsl(var(--border))"
-          strokeWidth="0.8"
-          className="cursor-pointer hover:fill-primary/30 transition-colors"
+          x={x + 2 + (width - 4) / 3}
+          y={y + 4}
+          width={(width - 4) / 3}
+          height={height - 8}
+          fill={toothState?.faces?.oclusal ? "hsl(var(--primary))" : "transparent"}
+          stroke="rgba(0,0,0,0.2)"
+          strokeWidth="0.5"
+          className="cursor-pointer hover:fill-primary/20"
           onClick={(e) => handleFaceClick(toothNumber, 'oclusal', e)}
         />
         
-        {/* Face Lingual (terceiro quadrado) */}
+        {/* Face Lingual (atrás) */}
         <rect
-          x={startX + (squareSize + spacing) * 2}
-          y={centerY}
-          width={squareSize}
-          height={squareSize}
-          fill={toothState?.faces?.lingual ? "hsl(var(--primary))" : "white"}
-          stroke="hsl(var(--border))"
-          strokeWidth="0.8"
-          className="cursor-pointer hover:fill-primary/30 transition-colors"
+          x={x + 2 + 2 * (width - 4) / 3}
+          y={y + 4}
+          width={(width - 4) / 3}
+          height={height - 8}
+          fill={toothState?.faces?.lingual ? "hsl(var(--primary))" : "transparent"}
+          stroke="rgba(0,0,0,0.2)"
+          strokeWidth="0.5"
+          className="cursor-pointer hover:fill-primary/20"
           onClick={(e) => handleFaceClick(toothNumber, 'lingual', e)}
         />
 
-        {/* Faces Mesial e Distal (pequenos quadrados abaixo) */}
+        {/* Face Mesial (esquerda/direita) */}
         <rect
-          x={startX + 2}
-          y={centerY + squareSize + 2}
-          width={4}
-          height={4}
-          fill={toothState?.faces?.mesial ? "hsl(var(--primary))" : "white"}
-          stroke="hsl(var(--border))"
+          x={x + 2}
+          y={y + 4}
+          width={width - 4}
+          height={(height - 8) / 2}
+          fill={toothState?.faces?.mesial ? "hsl(var(--primary))" : "transparent"}
+          stroke="rgba(0,0,0,0.2)"
           strokeWidth="0.5"
-          className="cursor-pointer hover:fill-primary/30 transition-colors"
+          className="cursor-pointer hover:fill-primary/20"
           onClick={(e) => handleFaceClick(toothNumber, 'mesial', e)}
         />
         
+        {/* Face Distal (esquerda/direita) */}
         <rect
-          x={startX + squareSize + spacing + 2}
-          y={centerY + squareSize + 2}
-          width={4}
-          height={4}
-          fill={toothState?.faces?.distal ? "hsl(var(--primary))" : "white"}
-          stroke="hsl(var(--border))"
+          x={x + 2}
+          y={y + 4 + (height - 8) / 2}
+          width={width - 4}
+          height={(height - 8) / 2}
+          fill={toothState?.faces?.distal ? "hsl(var(--primary))" : "transparent"}
+          stroke="rgba(0,0,0,0.2)"
           strokeWidth="0.5"
-          className="cursor-pointer hover:fill-primary/30 transition-colors"
+          className="cursor-pointer hover:fill-primary/20"
           onClick={(e) => handleFaceClick(toothNumber, 'distal', e)}
         />
 
         {/* Número do dente */}
         <text
-          x={x + baseSize / 2}
-          y={y + baseSize + 12}
+          x={centerX}
+          y={y + height + 12}
           textAnchor="middle"
-          fontSize="9"
+          fontSize="10"
           fill="hsl(var(--foreground))"
           className="pointer-events-none font-medium"
         >
           {toothNumber}
         </text>
 
-        {/* Indicador de seleção */}
+        {/* Marcação de dente com procedimento */}
         {toothState?.selected && (
           <circle
-            cx={x + baseSize - 3}
-            cy={y + 3}
-            r="2"
+            cx={x + width - 4}
+            cy={y + 6}
+            r="3"
             fill="hsl(var(--primary))"
             className="pointer-events-none"
           />
@@ -185,15 +226,22 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
     );
   };
 
-  const calculateToothSpacing = () => {
-    return 30; // Espaçamento uniforme para layout profissional
+  const calculateToothSpacing = (toothNumber: number) => {
+    const toothType = getToothType(toothNumber);
+    const baseSpacing = {
+      incisivo: 25,
+      canino: 23,
+      premolar: 27,
+      molar: 31
+    };
+    return baseSpacing[toothType];
   };
 
   const renderArchSection = (teeth: number[], startX: number, y: number, isUpper: boolean) => {
     let currentX = startX;
     return teeth.map((tooth) => {
       const toothElement = renderTooth(tooth, currentX, y, isUpper);
-      currentX += calculateToothSpacing();
+      currentX += calculateToothSpacing(tooth);
       return toothElement;
     });
   };
