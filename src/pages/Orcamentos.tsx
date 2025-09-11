@@ -101,34 +101,12 @@ export default function Orcamentos() {
     const procedimento = procedimentos.find(p => p.id === selectedProcedimento);
     if (!procedimento) return;
 
-    // Procedimentos que se aplicam a todos os dentes (não precisam de dente específico)
-    const procedimentosTodosDentes = [
-      'limpeza',
-      'manutenção ortodôntica', 
-      'clareamento dental',
-      'aparelho ortodôntico'
-    ];
-
-    const isProcedimentoTodosDentes = procedimentosTodosDentes.some(termo => 
-      procedimento.nome.toLowerCase().includes(termo)
-    );
-
-    // Se não é um procedimento para todos os dentes, precisa selecionar um dente
-    if (!isProcedimentoTodosDentes && !selectedTooth) {
-      toast({
-        title: "Erro",
-        description: "Selecione um dente para este procedimento",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const newItem: OrcamentoItem = {
       id: Date.now().toString(),
       procedimento_id: selectedProcedimento,
       procedimento_nome: procedimento.nome,
-      dente: isProcedimentoTodosDentes ? null : selectedTooth,
-      faces: isProcedimentoTodosDentes ? [] : selectedFaces,
+      dente: selectedTooth,
+      faces: selectedFaces,
       quantidade: parseInt(quantidade),
       preco_unitario: parseFloat(precoUnitario),
       observacoes
@@ -304,23 +282,6 @@ export default function Orcamentos() {
                        ))}
                      </SelectContent>
                    </Select>
-                   {selectedProcedimento && (() => {
-                     const procedimento = procedimentos.find(p => p.id === selectedProcedimento);
-                     const procedimentosTodosDentes = [
-                       'limpeza',
-                       'manutenção ortodôntica', 
-                       'clareamento dental',
-                       'aparelho ortodôntico'
-                     ];
-                     const isProcedimentoTodosDentes = procedimento && procedimentosTodosDentes.some(termo => 
-                       procedimento.nome.toLowerCase().includes(termo)
-                     );
-                     return isProcedimentoTodosDentes && (
-                       <p className="text-sm text-muted-foreground mt-1">
-                         Este procedimento se aplica a todos os dentes - não é necessário selecionar dente específico.
-                       </p>
-                     );
-                   })()}
                  </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -387,7 +348,7 @@ export default function Orcamentos() {
                     <TableBody>
                       {orcamentoItens.map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell>{item.dente || "Todos"}</TableCell>
+                          <TableCell>{item.dente || "-"}</TableCell>
                           <TableCell className="font-medium">
                             {item.procedimento_nome}
                             {item.faces.length > 0 && (
