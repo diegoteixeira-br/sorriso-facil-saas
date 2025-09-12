@@ -283,9 +283,9 @@ export function Dashboard() {
               <Calendar className="w-4 h-4 mr-2" />
               Nova Consulta
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button onClick={() => navigate('/financeiro')} variant="outline" className="w-full justify-start">
               <DollarSign className="w-4 h-4 mr-2" />
-              Registrar Pagamento
+              Novo Pagamento
             </Button>
             <Button onClick={() => navigate('/relatorios')} variant="outline" className="w-full justify-start">
               <TrendingUp className="w-4 h-4 mr-2" />
