@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NovoClienteModal } from "@/components/NovoClienteModal";
 import { AgendarConsultaModal } from "@/components/AgendarConsultaModal";
+import { NovoPagamentoModal } from "@/components/NovoPagamentoModal";
 import { 
   Users, 
   Calendar, 
@@ -59,6 +60,7 @@ export function Dashboard() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgendamentoModalOpen, setIsAgendamentoModalOpen] = useState(false);
+  const [isPagamentoModalOpen, setIsPagamentoModalOpen] = useState(false);
 
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
@@ -283,9 +285,9 @@ export function Dashboard() {
               <Calendar className="w-4 h-4 mr-2" />
               Nova Consulta
             </Button>
-            <Button onClick={() => navigate('/financeiro')} variant="outline" className="w-full justify-start">
+            <Button onClick={() => setIsPagamentoModalOpen(true)} variant="outline" className="w-full justify-start">
               <DollarSign className="w-4 h-4 mr-2" />
-              Novo Pagamento
+              Registrar Pagamento
             </Button>
             <Button onClick={() => navigate('/relatorios')} variant="outline" className="w-full justify-start">
               <TrendingUp className="w-4 h-4 mr-2" />
@@ -304,6 +306,11 @@ export function Dashboard() {
       <AgendarConsultaModal
         open={isAgendamentoModalOpen}
         onOpenChange={setIsAgendamentoModalOpen}
+      />
+      
+      <NovoPagamentoModal
+        open={isPagamentoModalOpen}
+        onOpenChange={setIsPagamentoModalOpen}
       />
     </div>
   );
