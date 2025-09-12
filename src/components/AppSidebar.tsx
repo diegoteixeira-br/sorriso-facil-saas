@@ -134,7 +134,7 @@ export function AppSidebar() {
       : "hover:bg-secondary text-muted-foreground hover:text-card-foreground";
 
   return (
-    <Sidebar className={`border-r border-border ${collapsed ? "w-14" : "w-64"}`} collapsible="icon">
+    <Sidebar className="border-r border-border w-64" collapsible="none">
       <SidebarContent className="bg-card">
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-border">
@@ -145,12 +145,10 @@ export function AppSidebar() {
               <Heart className="w-5 h-5 text-white" />
             )}
           </div>
-          {!collapsed && (
-            <div>
-              <h2 className="font-bold text-lg text-card-foreground">{clinicData.name}</h2>
-              <p className="text-xs text-muted-foreground">Sistema Odontológico</p>
-            </div>
-          )}
+          <div>
+            <h2 className="font-bold text-lg text-card-foreground">{clinicData.name}</h2>
+            <p className="text-xs text-muted-foreground">Sistema Odontológico</p>
+          </div>
         </div>
 
         {/* Menu Principal */}
@@ -169,7 +167,7 @@ export function AppSidebar() {
                       className={getNavCls}
                     >
                       <item.icon className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span className="truncate">{item.title}</span>}
+                      <span className="truncate">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -193,7 +191,7 @@ export function AppSidebar() {
                       className={getNavCls}
                     >
                       <item.icon className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span className="truncate">{item.title}</span>}
+                      <span className="truncate">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -217,7 +215,7 @@ export function AppSidebar() {
                       className={getNavCls}
                     >
                       <item.icon className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span className="truncate">{item.title}</span>}
+                      <span className="truncate">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
