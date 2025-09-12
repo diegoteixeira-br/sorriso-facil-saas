@@ -372,7 +372,7 @@ const Financeiro = () => {
                     <p className="text-xs text-muted-foreground">
                       {formData.forma_pagamento_parcelas === 'boleto' 
                         ? 'Boleto bancário: até 36 parcelas' 
-                        : 'Cartão de crédito: até 12 parcelas'
+                        : 'Cartão de crédito: até 3x sem juros, acima com juros da operadora'
                       }
                     </p>
                   </div>
@@ -387,6 +387,9 @@ const Financeiro = () => {
                         <p>Entrada: <span className="font-medium">R$ {parseFloat(formData.valor_entrada).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
                       )}
                       <p>Parcelas: <span className="font-medium">{formData.numero_parcelas}x de R$ {calculateParcela().toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
+                      {formData.forma_pagamento_parcelas === 'cartao' && parseInt(formData.numero_parcelas) > 3 && (
+                        <p className="text-amber-600 text-xs">⚠️ Parcelas acima de 3x terão juros da operadora da máquina</p>
+                      )}
                     </div>
                   </div>
                 )}
