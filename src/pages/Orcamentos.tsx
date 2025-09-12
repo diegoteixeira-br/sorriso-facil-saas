@@ -75,7 +75,7 @@ export default function Orcamentos() {
     }
   };
 
-  const handleToothSelect = (tooth: number, faces: string[]) => {
+  const handleToothSelect = (tooth: number | null, faces: string[]) => {
     setSelectedTooth(tooth);
     setSelectedFaces(faces);
   };

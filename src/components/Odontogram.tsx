@@ -16,7 +16,7 @@ interface ToothState {
 }
 
 interface OdontogramProps {
-  onToothSelect: (tooth: number, faces: string[]) => void;
+  onToothSelect: (tooth: number | null, faces: string[]) => void;
   selectedTeeth?: ToothState;
 }
 
@@ -30,13 +30,25 @@ export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProp
     inferior: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
   };
 
-  const handleToothClick = (toothNumber: number) => {
-    if (selectedTooth === toothNumber) {
-      setSelectedTooth(null); // Desmarca se clicar no mesmo dente
-    } else {
-      setSelectedTooth(toothNumber);
-    }
-  };
+const handleToothClick = (toothNumber: number) => {
+  if (selectedTooth === toothNumber) {
+    setSelectedTooth(null); // Desmarca se clicar no mesmo dente
+    onToothSelect(null, []); // Notifica o pai para limpar seleção
+  } else {
+    setSelectedTooth(toothNumber);
+    const faces = toothStates[toothNumber]?.faces || {
+      vestibular: false,
+      lingual: false,
+      mesial: false,
+      distal: false,
+      oclusal: false,
+    };
+    const selectedFaces = Object.entries(faces)
+      .filter(([_, v]) => v)
+      .map(([k]) => k);
+    onToothSelect(toothNumber, selectedFaces);
+  }
+};
 
   const handleFaceSelect = (face: string) => {
     if (!selectedTooth) return;
