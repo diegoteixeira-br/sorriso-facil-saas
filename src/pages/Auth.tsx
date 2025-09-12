@@ -37,7 +37,7 @@ const Auth = () => {
   return <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-card-foreground mb-2">Sorriso Fácil</h1>
+          <h1 className="text-3xl font-bold text-card-foreground mb-2">Sistema Odontológico</h1>
           <p className="text-muted-foreground">Sistema de Gestão para Clínicas Odontológicas</p>
         </div>
 

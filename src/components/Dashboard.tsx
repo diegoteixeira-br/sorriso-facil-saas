@@ -141,7 +141,7 @@ export function Dashboard() {
                   <p className="text-muted-foreground">
                     {subscriptionStatus.status === 'trial' 
                       ? `Seu trial expira em ${subscriptionEnd ? new Date(subscriptionEnd).toLocaleDateString('pt-BR') : 'breve'}`
-                      : 'Assine um plano para continuar usando o Sorriso Fácil'
+                      : 'Assine um plano para continuar usando o sistema'
                     }
                   </p>
                 </div>

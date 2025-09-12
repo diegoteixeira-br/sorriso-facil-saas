@@ -512,6 +512,7 @@ export type Database = {
           cnpj: string | null
           created_at: string
           id: string
+          logo_url: string | null
           phone: string | null
           subscription_end: string | null
           subscription_status: string | null
@@ -524,6 +525,7 @@ export type Database = {
           cnpj?: string | null
           created_at?: string
           id?: string
+          logo_url?: string | null
           phone?: string | null
           subscription_end?: string | null
           subscription_status?: string | null
@@ -536,6 +538,7 @@ export type Database = {
           cnpj?: string | null
           created_at?: string
           id?: string
+          logo_url?: string | null
           phone?: string | null
           subscription_end?: string | null
           subscription_status?: string | null
