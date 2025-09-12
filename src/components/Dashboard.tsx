@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NovoClienteModal } from "@/components/NovoClienteModal";
 import { 
   Users, 
   Calendar, 
@@ -54,6 +56,7 @@ export function Dashboard() {
   const { subscribed, subscriptionTier, subscriptionEnd, checkSubscription } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
@@ -111,7 +114,7 @@ export function Dashboard() {
           <Badge className={subscriptionStatus.color}>
             {subscriptionStatus.text}
           </Badge>
-          <Button onClick={() => navigate('/pacientes')} className="bg-gradient-medical shadow-medical">
+          <Button onClick={() => setIsModalOpen(true)} className="bg-gradient-medical shadow-medical">
             <Plus className="w-4 h-4 mr-2" />
             Novo Paciente
           </Button>
@@ -270,7 +273,7 @@ export function Dashboard() {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button onClick={() => navigate('/pacientes')} variant="outline" className="w-full justify-start">
+            <Button onClick={() => setIsModalOpen(true)} variant="outline" className="w-full justify-start">
               <Users className="w-4 h-4 mr-2" />
               Cadastrar Paciente
             </Button>
@@ -335,6 +338,11 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <NovoClienteModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 }

@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { NovoClienteModal } from "@/components/NovoClienteModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Search,
   Plus,
@@ -41,37 +44,6 @@ interface Patient {
   status: "ativo" | "inativo" | "pendente";
 }
 
-// Mock data - será substituído por dados reais do Supabase
-const mockPatients: Patient[] = [
-  {
-    id: "1",
-    nome: "Maria Silva",
-    telefone: "(11) 98765-4321",
-    email: "maria.silva@email.com",
-    data_nascimento: "1985-03-15",
-    ultima_consulta: "2024-01-15",
-    status: "ativo"
-  },
-  {
-    id: "2",
-    nome: "João Santos",
-    telefone: "(11) 98765-4322",
-    email: "joao.santos@email.com",
-    data_nascimento: "1990-07-22",
-    ultima_consulta: "2024-01-10",
-    status: "ativo"
-  },
-  {
-    id: "3",
-    nome: "Ana Costa",
-    telefone: "(11) 98765-4323",
-    email: "ana.costa@email.com",
-    data_nascimento: "1978-12-08",
-    ultima_consulta: "2023-12-20",
-    status: "inativo"
-  }
-];
-
 const getStatusBadge = (status: Patient["status"]) => {
   const variants = {
     ativo: "bg-success/10 text-success",
@@ -93,6 +65,7 @@ const getStatusBadge = (status: Patient["status"]) => {
 };
 
 const calculateAge = (birthDate: string) => {
+  if (!birthDate) return "-";
   const today = new Date();
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
@@ -107,13 +80,51 @@ const calculateAge = (birthDate: string) => {
 
 export default function Pacientes() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [patients] = useState<Patient[]>(mockPatients);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadPatients();
+  }, []);
+
+  const loadPatients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("pacientes")
+        .select("*")
+        .order("nome");
+
+      if (error) throw error;
+
+      // Transformar dados do Supabase para o formato esperado
+      const transformedPatients = data?.map(patient => ({
+        id: patient.id,
+        nome: patient.nome,
+        telefone: patient.telefone || "",
+        email: patient.email || "",
+        data_nascimento: patient.data_nascimento || "",
+        ultima_consulta: "2024-01-01", // Placeholder - pode ser obtido de agendamentos
+        status: "ativo" as const, // Placeholder - pode adicionar campo status na tabela
+      })) || [];
+
+      setPatients(transformedPatients);
+    } catch (error) {
+      console.error("Erro ao carregar pacientes:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar pacientes",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleNewPatient = () => {
-    // Placeholder para modal ou navegação para página de cadastro
-    console.log("Abrir modal/página de novo paciente");
-    // navigate("/pacientes/novo"); // Quando a página estiver criada
+    setIsModalOpen(true);
   };
 
   const filteredPatients = patients.filter(patient =>
@@ -121,6 +132,10 @@ export default function Pacientes() {
     patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.telefone.includes(searchTerm)
   );
+
+  if (isLoading) {
+    return <div className="p-6">Carregando pacientes...</div>;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -161,25 +176,25 @@ export default function Pacientes() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-card-foreground">1,234</div>
+            <div className="text-2xl font-bold text-card-foreground">{patients.length}</div>
             <p className="text-sm text-muted-foreground">Total de Pacientes</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-success">1,156</div>
+            <div className="text-2xl font-bold text-success">{patients.filter(p => p.status === "ativo").length}</div>
             <p className="text-sm text-muted-foreground">Pacientes Ativos</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-warning">78</div>
+            <div className="text-2xl font-bold text-warning">{patients.filter(p => p.status === "pendente").length}</div>
             <p className="text-sm text-muted-foreground">Pendentes</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-muted-foreground">45</div>
+            <div className="text-2xl font-bold text-muted-foreground">0</div>
             <p className="text-sm text-muted-foreground">Novos este Mês</p>
           </CardContent>
         </Card>
@@ -191,80 +206,92 @@ export default function Pacientes() {
           <CardTitle>Lista de Pacientes</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Contato</TableHead>
-                <TableHead>Idade</TableHead>
-                <TableHead>Última Consulta</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[50px]">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPatients.map((patient) => (
-                <TableRow key={patient.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium text-card-foreground">{patient.nome}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="w-3 h-3" />
-                        {patient.telefone}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Mail className="w-3 h-3" />
-                        {patient.email}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {calculateAge(patient.data_nascimento)} anos
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(patient.ultima_consulta).toLocaleDateString('pt-BR')}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(patient.status)}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Visualizar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash className="mr-2 h-4 w-4" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          {filteredPatients.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Nenhum paciente encontrado</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Contato</TableHead>
+                  <TableHead>Idade</TableHead>
+                  <TableHead>Última Consulta</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-[50px]">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredPatients.map((patient) => (
+                  <TableRow key={patient.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium text-card-foreground">{patient.nome}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="w-3 h-3" />
+                          {patient.telefone || "-"}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Mail className="w-3 h-3" />
+                          {patient.email || "-"}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {calculateAge(patient.data_nascimento)} anos
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="w-3 h-3" />
+                        {patient.ultima_consulta ? new Date(patient.ultima_consulta).toLocaleDateString('pt-BR') : "-"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(patient.status)}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Visualizar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            <Trash className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      <NovoClienteModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSuccess={loadPatients}
+      />
     </div>
   );
 }
