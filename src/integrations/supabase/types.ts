@@ -515,6 +515,7 @@ export type Database = {
           id: string
           logo_url: string | null
           phone: string | null
+          razao_social: string | null
           subscription_end: string | null
           subscription_status: string | null
           subscription_tier: string | null
@@ -529,6 +530,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          razao_social?: string | null
           subscription_end?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
@@ -543,6 +545,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          razao_social?: string | null
           subscription_end?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null

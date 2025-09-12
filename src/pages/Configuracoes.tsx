@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface ProfileSettings {
   clinic_name: string;
+  razao_social?: string;
   cnpj?: string;
   endereco?: string;
   logo_url?: string;
@@ -31,7 +32,7 @@ const Configuracoes = () => {
     
     const { data, error } = await supabase
       .from('profiles')
-      .select('clinic_name, cnpj, endereco, logo_url')
+      .select('clinic_name, razao_social, cnpj, endereco, logo_url')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -118,6 +119,7 @@ const Configuracoes = () => {
         .from('profiles')
         .update({ 
           clinic_name: profileSettings.clinic_name,
+          razao_social: profileSettings.razao_social,
           cnpj: profileSettings.cnpj,
           endereco: profileSettings.endereco
         })
@@ -171,21 +173,34 @@ const Configuracoes = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSaveProfile} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="clinic_name">Nome da Clínica *</Label>
-                    <Input
-                      id="clinic_name"
-                      placeholder="Digite o nome da sua clínica"
-                      value={profileSettings.clinic_name}
-                      onChange={(e) => setProfileSettings(prev => ({
-                        ...prev,
-                        clinic_name: e.target.value
-                      }))}
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clinic_name">Nome Fantasia da Clínica *</Label>
+                  <Input
+                    id="clinic_name"
+                    placeholder="Digite o nome fantasia da sua clínica"
+                    value={profileSettings.clinic_name}
+                    onChange={(e) => setProfileSettings(prev => ({
+                      ...prev,
+                      clinic_name: e.target.value
+                    }))}
+                    required
+                  />
+                </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="razao_social">Razão Social</Label>
+                  <Input
+                    id="razao_social"
+                    placeholder="Razão social da empresa"
+                    value={profileSettings.razao_social || ''}
+                    onChange={(e) => setProfileSettings(prev => ({
+                      ...prev,
+                      razao_social: e.target.value
+                    }))}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cnpj">CNPJ</Label>
                     <Input
