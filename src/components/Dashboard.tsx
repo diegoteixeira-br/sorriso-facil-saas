@@ -287,7 +287,7 @@ export function Dashboard() {
               <DollarSign className="w-4 h-4 mr-2" />
               Registrar Pagamento
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button onClick={() => navigate('/relatorios')} variant="outline" className="w-full justify-start">
               <TrendingUp className="w-4 h-4 mr-2" />
               Ver Relatórios
             </Button>
@@ -295,51 +295,6 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* Métricas Adicionais */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="animate-slide-up">
-          <CardHeader>
-            <CardTitle>Procedimentos Mais Realizados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                { name: "Limpeza", count: 45, percentage: 85 },
-                { name: "Restauração", count: 32, percentage: 60 },
-                { name: "Tratamento de Canal", count: 18, percentage: 35 },
-                { name: "Extração", count: 12, percentage: 25 },
-              ].map((procedure, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-card-foreground">{procedure.name}</span>
-                    <span className="text-muted-foreground">{procedure.count}</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className="bg-gradient-medical h-2 rounded-full transition-all duration-300" 
-                      style={{ width: `${procedure.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="animate-slide-up">
-          <CardHeader>
-            <CardTitle>Faturamento Semanal</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-card-foreground mb-2">R$ 6.850</div>
-            <p className="text-sm text-muted-foreground mb-4">Meta: R$ 8.000</p>
-            <div className="w-full bg-muted rounded-full h-3">
-              <div className="bg-gradient-success h-3 rounded-full" style={{ width: '85.6%' }} />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">85.6% da meta atingida</p>
-          </CardContent>
-        </Card>
-      </div>
 
       <NovoClienteModal
         open={isModalOpen}
