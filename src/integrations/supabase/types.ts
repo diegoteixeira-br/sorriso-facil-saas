@@ -408,14 +408,20 @@ export type Database = {
           data_pagamento: string | null
           data_vencimento: string | null
           forma_pagamento: string
+          forma_pagamento_entrada: string | null
           id: string
+          numero_parcelas: number | null
           observacoes: string | null
           orcamento_id: string | null
           paciente_id: string
+          parcela_numero: number | null
+          plano_pagamento: boolean | null
           status: string | null
           updated_at: string
           user_id: string | null
           valor: number
+          valor_entrada: number | null
+          valor_total: number | null
         }
         Insert: {
           agendamento_id?: string | null
@@ -424,14 +430,20 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento?: string | null
           forma_pagamento: string
+          forma_pagamento_entrada?: string | null
           id?: string
+          numero_parcelas?: number | null
           observacoes?: string | null
           orcamento_id?: string | null
           paciente_id: string
+          parcela_numero?: number | null
+          plano_pagamento?: boolean | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
           valor: number
+          valor_entrada?: number | null
+          valor_total?: number | null
         }
         Update: {
           agendamento_id?: string | null
@@ -440,14 +452,20 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento?: string | null
           forma_pagamento?: string
+          forma_pagamento_entrada?: string | null
           id?: string
+          numero_parcelas?: number | null
           observacoes?: string | null
           orcamento_id?: string | null
           paciente_id?: string
+          parcela_numero?: number | null
+          plano_pagamento?: boolean | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
           valor?: number
+          valor_entrada?: number | null
+          valor_total?: number | null
         }
         Relationships: [
           {

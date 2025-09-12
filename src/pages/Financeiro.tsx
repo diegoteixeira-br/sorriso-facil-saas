@@ -26,12 +26,14 @@ interface PlanosPagamento {
     nome: string;
     email?: string;
   };
-  valor_total: number;
+  valor: number;
+  valor_total?: number;
   valor_entrada?: number;
+  forma_pagamento: string;
   forma_pagamento_entrada?: string;
-  forma_pagamento_parcelas: string;
-  numero_parcelas: number;
-  valor_parcela: number;
+  numero_parcelas?: number;
+  parcela_numero?: number;
+  plano_pagamento?: boolean;
   status: string;
   observacoes?: string;
   created_at: string;
@@ -79,12 +81,13 @@ const Financeiro = () => {
 
   const fetchPlanosPagamento = async () => {
     const { data, error } = await supabase
-      .from('planos_pagamento')
+      .from('pagamentos')
       .select(`
         *,
         paciente:pacientes(nome, email)
       `)
       .eq('user_id', user?.id)
+      .eq('plano_pagamento', true)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -102,6 +105,15 @@ const Financeiro = () => {
       setLoading(false);
     }
   }, [user]);
+
+  const calculateParcelaDisplay = (plano: PlanosPagamento) => {
+    const valorTotal = plano.valor_total || plano.valor;
+    const valorEntrada = plano.valor_entrada || 0;
+    const numeroParcelas = plano.numero_parcelas || 1;
+    
+    const valorRestante = valorTotal - valorEntrada;
+    return valorRestante / numeroParcelas;
+  };
 
   const calculateParcela = () => {
     const valorTotal = parseFloat(formData.valor_total) || 0;
@@ -121,20 +133,26 @@ const Financeiro = () => {
 
     const valorParcela = calculateParcela();
     
+    // Primeiro criar o registro principal do plano
     const planoData = {
-      ...formData,
       user_id: user?.id,
+      paciente_id: formData.paciente_id,
+      valor: parseFloat(formData.valor_total),
       valor_total: parseFloat(formData.valor_total),
       valor_entrada: formData.valor_entrada ? parseFloat(formData.valor_entrada) : null,
+      forma_pagamento: formData.forma_pagamento_parcelas,
+      forma_pagamento_entrada: formData.forma_pagamento_entrada || null,
       numero_parcelas: parseInt(formData.numero_parcelas),
-      valor_parcela: valorParcela,
-      status: 'ativo'
+      parcela_numero: 0, // Registro principal
+      plano_pagamento: true,
+      status: 'ativo',
+      observacoes: formData.observacoes
     };
 
     try {
       if (editingPlano) {
         const { error } = await supabase
-          .from('planos_pagamento')
+          .from('pagamentos')
           .update(planoData)
           .eq('id', editingPlano.id);
         
@@ -142,7 +160,7 @@ const Financeiro = () => {
         toast.success('Plano de pagamento atualizado com sucesso!');
       } else {
         const { error } = await supabase
-          .from('planos_pagamento')
+          .from('pagamentos')
           .insert([planoData]);
         
         if (error) throw error;
@@ -406,7 +424,7 @@ const Financeiro = () => {
                           {plano.paciente?.nome}
                         </TableCell>
                         <TableCell>
-                          R$ {plano.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {(plano.valor_total || plano.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell>
                           {plano.valor_entrada 
@@ -415,11 +433,11 @@ const Financeiro = () => {
                           }
                         </TableCell>
                         <TableCell>
-                          {plano.numero_parcelas}x de R$ {plano.valor_parcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          {plano.numero_parcelas || 1}x de R$ {calculateParcelaDisplay(plano).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {plano.forma_pagamento_parcelas === 'boleto' ? 'Boleto' : 'Cartão'}
+                            {plano.forma_pagamento === 'boleto' ? 'Boleto' : 'Cartão'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -427,7 +445,7 @@ const Financeiro = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {plano.forma_pagamento_parcelas === 'boleto' && (
+                            {plano.forma_pagamento === 'boleto' && (
                               <Button
                                 variant="outline"
                                 size="sm"
