@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Building2, Save, Upload, X } from "lucide-react";
+import { Settings, Building2, Save, Upload, X, CreditCard, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,31 +17,65 @@ interface ProfileSettings {
   logo_url?: string;
 }
 
+interface AsaasSettings {
+  api_key?: string;
+  webhook_token?: string;
+  environment?: 'sandbox' | 'production';
+}
+
 const Configuracoes = () => {
   const { user } = useAuth();
   const [profileSettings, setProfileSettings] = useState<ProfileSettings>({
     clinic_name: ''
   });
+  const [asaasSettings, setAsaasSettings] = useState<AsaasSettings>({
+    environment: 'sandbox'
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showWebhookToken, setShowWebhookToken] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchProfileSettings = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('clinic_name, razao_social, cnpj, endereco, logo_url')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    try {
+      // Fetch profile settings
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('clinic_name, razao_social, cnpj, endereco, logo_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
-      toast.error('Erro ao carregar configurações');
-      console.error(error);
-    } else {
-      setProfileSettings(data || { clinic_name: '' });
+      if (profileError && profileError.code !== 'PGRST116') {
+        toast.error('Erro ao carregar configurações');
+        console.error(profileError);
+      } else {
+        setProfileSettings(profileData || { clinic_name: '' });
+      }
+
+      // Fetch Asaas settings
+      const { data: asaasData, error: asaasError } = await supabase
+        .from('user_settings')
+        .select('asaas_api_key, asaas_webhook_token, asaas_environment')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (asaasError && asaasError.code !== 'PGRST116') {
+        console.error('Erro ao carregar configurações do Asaas:', asaasError);
+      } else if (asaasData) {
+        setAsaasSettings({
+          api_key: asaasData.asaas_api_key || '',
+          webhook_token: asaasData.asaas_webhook_token || '',
+          environment: asaasData.asaas_environment || 'sandbox'
+        });
+      }
+    } catch (error) {
+      console.error('Erro geral ao carregar configurações:', error);
     }
+    
     setLoading(false);
   };
 
@@ -136,6 +170,35 @@ const Configuracoes = () => {
     }
   };
 
+  const handleSaveAsaasSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({ 
+          user_id: user.id,
+          asaas_api_key: asaasSettings.api_key,
+          asaas_webhook_token: asaasSettings.webhook_token,
+          asaas_environment: asaasSettings.environment
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      toast.success('Configurações do Asaas salvas com sucesso!');
+    } catch (error) {
+      console.error('Error saving Asaas settings:', error);
+      toast.error('Erro ao salvar configurações do Asaas');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-[400px]">Carregando...</div>;
   }
@@ -153,10 +216,14 @@ const Configuracoes = () => {
       </div>
 
       <Tabs defaultValue="clinic" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-1">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="clinic" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             Dados da Clínica
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            Pagamentos (Asaas)
           </TabsTrigger>
         </TabsList>
 
@@ -298,6 +365,118 @@ const Configuracoes = () => {
                   <Button 
                     type="submit" 
                     disabled={saving}
+                    className="bg-gradient-medical hover:opacity-90"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saving ? 'Salvando...' : 'Salvar Configurações'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Configurações do Asaas
+              </CardTitle>
+              <CardDescription>
+                Configure sua conta do Asaas para gerar boletos e cobranças automaticamente
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSaveAsaasSettings} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="environment">Ambiente</Label>
+                  <select
+                    id="environment"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                    value={asaasSettings.environment}
+                    onChange={(e) => setAsaasSettings(prev => ({
+                      ...prev,
+                      environment: e.target.value as 'sandbox' | 'production'
+                    }))}
+                  >
+                    <option value="sandbox">Sandbox (Teste)</option>
+                    <option value="production">Produção</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="api_key">API Key do Asaas *</Label>
+                  <div className="relative">
+                    <Input
+                      id="api_key"
+                      type={showApiKey ? "text" : "password"}
+                      placeholder="$aact_YTU5YjRlM2I4ODQ4YTY4Nz..."
+                      value={asaasSettings.api_key || ''}
+                      onChange={(e) => setAsaasSettings(prev => ({
+                        ...prev,
+                        api_key: e.target.value
+                      }))}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                    >
+                      {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Encontre sua API Key no painel do Asaas em Configurações → API Key
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="webhook_token">Token do Webhook (Opcional)</Label>
+                  <div className="relative">
+                    <Input
+                      id="webhook_token"
+                      type={showWebhookToken ? "text" : "password"}
+                      placeholder="Token para validação de webhooks"
+                      value={asaasSettings.webhook_token || ''}
+                      onChange={(e) => setAsaasSettings(prev => ({
+                        ...prev,
+                        webhook_token: e.target.value
+                      }))}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowWebhookToken(!showWebhookToken)}
+                    >
+                      {showWebhookToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Token usado para validar webhooks do Asaas (opcional mas recomendado)
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">Como configurar:</h4>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                    <li>Acesse sua conta no <a href="https://www.asaas.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Asaas</a></li>
+                    <li>Vá em <strong>Configurações → API Key</strong></li>
+                    <li>Copie sua API Key e cole no campo acima</li>
+                    <li>Configure webhooks se necessário para receber notificações automáticas</li>
+                  </ol>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={saving || !asaasSettings.api_key}
                     className="bg-gradient-medical hover:opacity-90"
                   >
                     <Save className="w-4 h-4 mr-2" />
