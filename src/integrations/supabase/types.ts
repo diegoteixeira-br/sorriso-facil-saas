@@ -511,6 +511,7 @@ export type Database = {
           clinic_name: string
           cnpj: string | null
           created_at: string
+          endereco: string | null
           id: string
           logo_url: string | null
           phone: string | null
@@ -524,6 +525,7 @@ export type Database = {
           clinic_name: string
           cnpj?: string | null
           created_at?: string
+          endereco?: string | null
           id?: string
           logo_url?: string | null
           phone?: string | null
@@ -537,6 +539,7 @@ export type Database = {
           clinic_name?: string
           cnpj?: string | null
           created_at?: string
+          endereco?: string | null
           id?: string
           logo_url?: string | null
           phone?: string | null

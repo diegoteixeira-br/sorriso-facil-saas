@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface ProfileSettings {
   clinic_name: string;
+  cnpj?: string;
+  endereco?: string;
   logo_url?: string;
 }
 
@@ -29,7 +31,7 @@ const Configuracoes = () => {
     
     const { data, error } = await supabase
       .from('profiles')
-      .select('clinic_name, logo_url')
+      .select('clinic_name, cnpj, endereco, logo_url')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -114,7 +116,11 @@ const Configuracoes = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ clinic_name: profileSettings.clinic_name })
+        .update({ 
+          clinic_name: profileSettings.clinic_name,
+          cnpj: profileSettings.cnpj,
+          endereco: profileSettings.endereco
+        })
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -165,17 +171,45 @@ const Configuracoes = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSaveProfile} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="clinic_name">Nome da Clínica *</Label>
+                    <Input
+                      id="clinic_name"
+                      placeholder="Digite o nome da sua clínica"
+                      value={profileSettings.clinic_name}
+                      onChange={(e) => setProfileSettings(prev => ({
+                        ...prev,
+                        clinic_name: e.target.value
+                      }))}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cnpj">CNPJ</Label>
+                    <Input
+                      id="cnpj"
+                      placeholder="00.000.000/0000-00"
+                      value={profileSettings.cnpj || ''}
+                      onChange={(e) => setProfileSettings(prev => ({
+                        ...prev,
+                        cnpj: e.target.value
+                      }))}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="clinic_name">Nome da Clínica</Label>
+                  <Label htmlFor="endereco">Endereço Completo</Label>
                   <Input
-                    id="clinic_name"
-                    placeholder="Digite o nome da sua clínica"
-                    value={profileSettings.clinic_name}
+                    id="endereco"
+                    placeholder="Rua, número, bairro, cidade, CEP"
+                    value={profileSettings.endereco || ''}
                     onChange={(e) => setProfileSettings(prev => ({
                       ...prev,
-                      clinic_name: e.target.value
+                      endereco: e.target.value
                     }))}
-                    required
                   />
                 </div>
 
