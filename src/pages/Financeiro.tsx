@@ -463,7 +463,7 @@ const Financeiro = () => {
                     Cancelar
                   </Button>
                   <Button type="submit" className="bg-gradient-medical hover:opacity-90">
-                    {editingPagamento ? 'Atualizar Pagamento' : 'Registrar Pagamento'}
+                    {editingPagamento ? 'Atualizar' : 'Registrar'} Pagamento
                   </Button>
                 </div>
               </form>
