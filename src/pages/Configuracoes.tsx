@@ -23,6 +23,10 @@ interface AsaasSettings {
   environment?: 'sandbox' | 'production';
 }
 
+interface MaquinaSettings {
+  taxa_juros_cartao?: number;
+}
+
 const Configuracoes = () => {
   const { user } = useAuth();
   const [profileSettings, setProfileSettings] = useState<ProfileSettings>({
@@ -30,6 +34,9 @@ const Configuracoes = () => {
   });
   const [asaasSettings, setAsaasSettings] = useState<AsaasSettings>({
     environment: 'sandbox'
+  });
+  const [maquinaSettings, setMaquinaSettings] = useState<MaquinaSettings>({
+    taxa_juros_cartao: 2.5
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,6 +77,10 @@ const Configuracoes = () => {
           api_key: (asaasData as any).asaas_api_key || '',
           webhook_token: (asaasData as any).asaas_webhook_token || '',
           environment: (asaasData as any).asaas_environment || 'sandbox'
+        });
+        
+        setMaquinaSettings({
+          taxa_juros_cartao: (asaasData as any).taxa_juros_cartao || 2.5
         });
       }
     } catch (error) {
@@ -183,17 +194,18 @@ const Configuracoes = () => {
           user_id: user.id,
           asaas_api_key: asaasSettings.api_key,
           asaas_webhook_token: asaasSettings.webhook_token,
-          asaas_environment: asaasSettings.environment
+          asaas_environment: asaasSettings.environment,
+          taxa_juros_cartao: maquinaSettings.taxa_juros_cartao
         }, {
           onConflict: 'user_id'
         });
 
       if (error) throw error;
 
-      toast.success('Configurações do Asaas salvas com sucesso!');
+      toast.success('Configurações salvas com sucesso!');
     } catch (error) {
-      console.error('Error saving Asaas settings:', error);
-      toast.error('Erro ao salvar configurações do Asaas');
+      console.error('Error saving settings:', error);
+      toast.error('Erro ao salvar configurações');
     } finally {
       setSaving(false);
     }
@@ -216,7 +228,7 @@ const Configuracoes = () => {
       </div>
 
       <Tabs defaultValue="clinic" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="clinic" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             Dados da Clínica
@@ -224,6 +236,10 @@ const Configuracoes = () => {
           <TabsTrigger value="payments" className="flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
             Pagamentos (Asaas)
+          </TabsTrigger>
+          <TabsTrigger value="machine" className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            Máquina de Cartão
           </TabsTrigger>
         </TabsList>
 
@@ -477,6 +493,63 @@ const Configuracoes = () => {
                   <Button 
                     type="submit" 
                     disabled={saving || !asaasSettings.api_key}
+                    className="bg-gradient-medical hover:opacity-90"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saving ? 'Salvando...' : 'Salvar Configurações'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="machine">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Configurações da Máquina de Cartão
+              </CardTitle>
+              <CardDescription>
+                Configure as taxas de juros da sua máquina de cartão
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSaveAsaasSettings} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="taxa_juros">Taxa de Juros por Parcela (%)</Label>
+                  <Input
+                    id="taxa_juros"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="10"
+                    placeholder="2.5"
+                    value={maquinaSettings.taxa_juros_cartao || ''}
+                    onChange={(e) => setMaquinaSettings(prev => ({
+                      ...prev,
+                      taxa_juros_cartao: parseFloat(e.target.value)
+                    }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Taxa de juros aplicada por parcela acima de 3x no cartão de crédito
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">Como funciona:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Até 3x: sem juros</li>
+                    <li>4x ou mais: aplica {maquinaSettings.taxa_juros_cartao || 2.5}% de juros por parcela</li>
+                    <li>Exemplo: 10x = 10 × {maquinaSettings.taxa_juros_cartao || 2.5}% = {((maquinaSettings.taxa_juros_cartao || 2.5) * 10).toFixed(1)}% total</li>
+                  </ul>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={saving}
                     className="bg-gradient-medical hover:opacity-90"
                   >
                     <Save className="w-4 h-4 mr-2" />
