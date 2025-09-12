@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import { 
   Search,
   Plus,
@@ -107,6 +108,13 @@ const calculateAge = (birthDate: string) => {
 export default function Pacientes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [patients] = useState<Patient[]>(mockPatients);
+  const navigate = useNavigate();
+
+  const handleNewPatient = () => {
+    // Placeholder para modal ou navegação para página de cadastro
+    console.log("Abrir modal/página de novo paciente");
+    // navigate("/pacientes/novo"); // Quando a página estiver criada
+  };
 
   const filteredPatients = patients.filter(patient =>
     patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -122,7 +130,7 @@ export default function Pacientes() {
           <h1 className="text-3xl font-bold text-card-foreground">Pacientes</h1>
           <p className="text-muted-foreground">Gerencie os pacientes da clínica</p>
         </div>
-        <Button className="bg-gradient-medical shadow-medical">
+        <Button onClick={handleNewPatient} className="bg-gradient-medical shadow-medical">
           <Plus className="w-4 h-4 mr-2" />
           Novo Paciente
         </Button>

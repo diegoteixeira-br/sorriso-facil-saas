@@ -111,7 +111,7 @@ export function Dashboard() {
           <Badge className={subscriptionStatus.color}>
             {subscriptionStatus.text}
           </Badge>
-          <Button className="bg-gradient-medical shadow-medical">
+          <Button onClick={() => navigate('/pacientes')} className="bg-gradient-medical shadow-medical">
             <Plus className="w-4 h-4 mr-2" />
             Novo Paciente
           </Button>
@@ -270,7 +270,7 @@ export function Dashboard() {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
+            <Button onClick={() => navigate('/pacientes')} variant="outline" className="w-full justify-start">
               <Users className="w-4 h-4 mr-2" />
               Cadastrar Paciente
             </Button>
