@@ -8,7 +8,6 @@ import {
   Settings,
   Heart,
   Stethoscope,
-  CalendarDays,
   ClipboardList
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -24,53 +23,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-
-const ClinicLogo = ({ collapsed }: { collapsed: boolean }) => {
-  const { user } = useAuth();
-  const [clinicData, setClinicData] = React.useState<{ name: string; logo?: string }>({ name: 'Sorriso Fácil' });
-
-  React.useEffect(() => {
-    const fetchClinicData = async () => {
-      if (!user) return;
-      
-      const { data } = await supabase
-        .from('profiles')
-        .select('clinic_name, logo_url')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (data) {
-        setClinicData({
-          name: data.clinic_name || 'Sorriso Fácil',
-          logo: data.logo_url || undefined
-        });
-      }
-    };
-
-    fetchClinicData();
-  }, [user]);
-
-  return (
-    <>
-      <div className="w-8 h-8 bg-gradient-medical rounded-lg flex items-center justify-center overflow-hidden">
-        {clinicData.logo ? (
-          <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" />
-        ) : (
-          <Heart className="w-5 h-5 text-white" />
-        )}
-      </div>
-      {!collapsed && (
-        <div>
-          <h2 className="font-bold text-lg text-card-foreground">{clinicData.name}</h2>
-          <p className="text-xs text-muted-foreground">Sistema Odontológico</p>
-        </div>
-      )}
-    </>
-  );
-};
 
 const menuItems = [
   {
@@ -137,9 +91,35 @@ const groupedItems = {
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { user } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  
+  const [clinicData, setClinicData] = React.useState<{ name: string; logo?: string }>({ 
+    name: 'Sorriso Fácil' 
+  });
+
+  React.useEffect(() => {
+    const fetchClinicData = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('clinic_name, logo_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (data) {
+        setClinicData({
+          name: data.clinic_name || 'Sorriso Fácil',
+          logo: data.logo_url || undefined
+        });
+      }
+    };
+
+    fetchClinicData();
+  }, [user]);
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -158,7 +138,19 @@ export function AppSidebar() {
       <SidebarContent className="bg-card">
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-border">
-          <ClinicLogo collapsed={collapsed} />
+          <div className="w-8 h-8 bg-gradient-medical rounded-lg flex items-center justify-center overflow-hidden">
+            {clinicData.logo ? (
+              <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" />
+            ) : (
+              <Heart className="w-5 h-5 text-white" />
+            )}
+          </div>
+          {!collapsed && (
+            <div>
+              <h2 className="font-bold text-lg text-card-foreground">{clinicData.name}</h2>
+              <p className="text-xs text-muted-foreground">Sistema Odontológico</p>
+            </div>
+          )}
         </div>
 
         {/* Menu Principal */}
