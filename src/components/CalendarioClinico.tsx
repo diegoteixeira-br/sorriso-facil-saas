@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Plus, Calendar, Clock, User, Stethoscope } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, startOfWeek, endOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -108,7 +108,15 @@ const CalendarioClinico = () => {
   const generateCalendarDays = () => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
-    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    
+    // Encontrar o primeiro domingo da grade do calendário
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    
+    // Encontrar o último sábado da grade do calendário
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+    
+    // Gerar todos os dias da grade do calendário
+    const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
     
     return days;
   };
