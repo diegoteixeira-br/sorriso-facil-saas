@@ -1,175 +1,139 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CalendarDays, Clock } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-
-interface UserSettings {
-  google_calendar_enabled: boolean;
-  google_access_token?: string;
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, User, Clock, Settings, CalendarDays } from "lucide-react";
+import CalendarioClinico from "@/components/CalendarioClinico";
+import AgendaPorDentista from "@/components/AgendaPorDentista";
+import BloqueiosFerias from "@/components/BloqueiosFerias";
 
 const Agenda = () => {
-  const { user } = useAuth();
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchUserSettings = async () => {
-    if (!user) return;
-    
-    const { data, error } = await supabase
-      .from('user_settings')
-      .select('google_calendar_enabled, google_access_token')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (error && error.code !== 'PGRST116') {
-      toast.error('Erro ao carregar configurações');
-      console.error(error);
-    } else {
-      setUserSettings(data || { google_calendar_enabled: false });
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchUserSettings();
-  }, [user]);
-
-  const handleGoogleCalendarSync = async () => {
-    try {
-      if (userSettings?.google_calendar_enabled) {
-        // Se já está conectado, mostrar opções de gerenciamento
-        toast.info('Funcionalidade de gerenciamento será implementada em breve');
-        return;
-      }
-
-      // Solicitar URL de autorização do Google
-      const { data, error } = await supabase.functions.invoke('google-calendar-auth', {
-        body: { action: 'get_auth_url' }
-      });
-
-      if (error) {
-        console.error('Erro ao obter URL de autorização:', error);
-        toast.error('Erro ao conectar com Google Calendar');
-        return;
-      }
-
-      // Redirecionar para o Google OAuth
-      window.open(data.authUrl, '_blank', 'width=500,height=600');
-      
-      // Aguardar confirmação (em uma implementação real, seria melhor usar postMessage)
-      toast.success('Janela de autorização aberta. Complete a autorização e volte aqui.');
-      
-      // Atualizar configurações após um delay para dar tempo da autorização
-      setTimeout(() => {
-        fetchUserSettings();
-      }, 3000);
-
-    } catch (error) {
-      console.error('Erro na sincronização:', error);
-      toast.error('Erro ao conectar com Google Calendar');
-    }
-  };
-
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-[400px]">Carregando...</div>;
-  }
+  const [activeTab, setActiveTab] = useState("calendario");
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-medical rounded-lg flex items-center justify-center">
             <Calendar className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-card-foreground">Agenda</h1>
-            <p className="text-muted-foreground">Gerencie seus agendamentos</p>
+            <h1 className="text-3xl font-bold text-card-foreground">Agenda Clínica</h1>
+            <p className="text-muted-foreground">Sistema completo de agendamentos para clínicas odontológicas</p>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 mb-6">
-        {/* Google Calendar Integration Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <CalendarDays className="w-6 h-6 text-blue-600" />
-              <div>
-                <CardTitle>Integração com Google Calendar</CardTitle>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="calendario" className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4" />
+            Calendário
+          </TabsTrigger>
+          <TabsTrigger value="por-dentista" className="flex items-center gap-2">
+            <User className="w-4 h-4" />
+            Por Dentista
+          </TabsTrigger>
+          <TabsTrigger value="bloqueios" className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Bloqueios/Férias
+          </TabsTrigger>
+          <TabsTrigger value="configuracoes" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Configurações
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calendario" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Calendário Mensal</CardTitle>
+              <CardDescription>
+                Visualização geral dos agendamentos por mês com filtros por dentista
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CalendarioClinico />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="por-dentista" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Agenda por Dentista</CardTitle>
+              <CardDescription>
+                Visualização detalhada da agenda diária de cada dentista
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AgendaPorDentista />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bloqueios" className="space-y-4">
+          <BloqueiosFerias />
+        </TabsContent>
+
+        <TabsContent value="configuracoes" className="space-y-4">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Horários de Funcionamento</CardTitle>
                 <CardDescription>
-                  Sincronize seus agendamentos com o Google Calendar
+                  Configure os horários padrão de atendimento da clínica
                 </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${
-                    userSettings?.google_calendar_enabled ? 'bg-green-500' : 'bg-gray-300'
-                  }`} />
-                  <div>
-                    <p className="font-medium">Status da Sincronização</p>
-                    <p className="text-sm text-muted-foreground">
-                      {userSettings?.google_calendar_enabled 
-                        ? 'Conectado ao Google Calendar'
-                        : 'Não conectado'
-                      }
-                    </p>
-                  </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Em desenvolvimento</h3>
+                  <p className="text-muted-foreground">
+                    Configuração de horários será implementada em breve
+                  </p>
                 </div>
-                <Button 
-                  onClick={handleGoogleCalendarSync}
-                  variant={userSettings?.google_calendar_enabled ? "outline" : "default"}
-                  className={!userSettings?.google_calendar_enabled ? "bg-gradient-medical hover:opacity-90" : ""}
-                >
-                  {userSettings?.google_calendar_enabled ? 'Gerenciar' : 'Conectar'}
-                </Button>
-              </div>
+              </CardContent>
+            </Card>
 
-              {!userSettings?.google_calendar_enabled && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">Como configurar:</h4>
-                  <ol className="text-sm text-blue-800 space-y-1">
-                    <li>1. Vá para "Configurações" no menu lateral</li>
-                    <li>2. Configure suas credenciais do Google Calendar</li>
-                    <li>3. Volte aqui para ativar a sincronização</li>
-                  </ol>
+            <Card>
+              <CardHeader>
+                <CardTitle>Lista de Espera</CardTitle>
+                <CardDescription>
+                  Gerencie pacientes em lista de espera para horários vagos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <User className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Em desenvolvimento</h3>
+                  <p className="text-muted-foreground">
+                    Sistema de lista de espera será implementado em breve
+                  </p>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Calendar View */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Calendário de Agendamentos</CardTitle>
-            <CardDescription>
-              Visualize e gerencie todos os seus agendamentos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12">
-              <Clock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">
-                Calendário em Desenvolvimento
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                O sistema de calendário interativo será implementado em breve
-              </p>
-              <Button variant="outline">
-                Ver Agendamentos (Lista)
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Relatórios de Agenda</CardTitle>
+                <CardDescription>
+                  Visualize estatísticas de agendamentos, faltas e ocupação
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <CalendarDays className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Em desenvolvimento</h3>
+                  <p className="text-muted-foreground">
+                    Relatórios de agenda serão implementados em breve
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
