@@ -59,7 +59,7 @@ const Configuracoes = () => {
       // Fetch Asaas settings
       const { data: asaasData, error: asaasError } = await supabase
         .from('user_settings')
-        .select('asaas_api_key, asaas_webhook_token, asaas_environment')
+        .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -67,9 +67,9 @@ const Configuracoes = () => {
         console.error('Erro ao carregar configurações do Asaas:', asaasError);
       } else if (asaasData) {
         setAsaasSettings({
-          api_key: asaasData.asaas_api_key || '',
-          webhook_token: asaasData.asaas_webhook_token || '',
-          environment: asaasData.asaas_environment || 'sandbox'
+          api_key: (asaasData as any).asaas_api_key || '',
+          webhook_token: (asaasData as any).asaas_webhook_token || '',
+          environment: (asaasData as any).asaas_environment || 'sandbox'
         });
       }
     } catch (error) {

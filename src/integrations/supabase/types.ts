@@ -592,6 +592,9 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          asaas_api_key: string | null
+          asaas_environment: string | null
+          asaas_webhook_token: string | null
           created_at: string
           google_access_token: string | null
           google_calendar_enabled: boolean | null
@@ -603,6 +606,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          asaas_api_key?: string | null
+          asaas_environment?: string | null
+          asaas_webhook_token?: string | null
           created_at?: string
           google_access_token?: string | null
           google_calendar_enabled?: boolean | null
@@ -614,6 +620,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          asaas_api_key?: string | null
+          asaas_environment?: string | null
+          asaas_webhook_token?: string | null
           created_at?: string
           google_access_token?: string | null
           google_calendar_enabled?: boolean | null
