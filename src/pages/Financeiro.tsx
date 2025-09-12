@@ -124,6 +124,10 @@ const Financeiro = () => {
     return valorRestante / numeroParcelas;
   };
 
+  const getMaxParcelas = () => {
+    return formData.forma_pagamento_parcelas === 'boleto' ? 36 : 12;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.paciente_id || !formData.valor_total || !formData.forma_pagamento_parcelas) {
@@ -327,7 +331,14 @@ const Financeiro = () => {
                     <Label htmlFor="forma_pagamento_parcelas">Forma de Pagamento das Parcelas *</Label>
                     <Select 
                       value={formData.forma_pagamento_parcelas} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, forma_pagamento_parcelas: value }))}
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          forma_pagamento_parcelas: value,
+                          // Reset parcelas quando muda forma de pagamento
+                          numero_parcelas: '1'
+                        }));
+                      }}
                       required
                     >
                       <SelectTrigger>
@@ -351,13 +362,19 @@ const Financeiro = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                        {Array.from({ length: getMaxParcelas() }, (_, i) => i + 1).map(num => (
                           <SelectItem key={num} value={num.toString()}>
                             {num}x
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground">
+                      {formData.forma_pagamento_parcelas === 'boleto' 
+                        ? 'Boleto bancário: até 36 parcelas' 
+                        : 'Cartão de crédito: até 12 parcelas'
+                      }
+                    </p>
                   </div>
                 </div>
 
