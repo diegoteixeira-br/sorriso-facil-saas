@@ -130,8 +130,8 @@ export function AppSidebar() {
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
-      ? "bg-primary text-primary-foreground font-medium shadow-medical" 
-      : "hover:bg-secondary text-muted-foreground hover:text-card-foreground";
+      ? "bg-primary text-primary-foreground font-medium shadow-md border-l-4 border-primary-foreground" 
+      : "text-card-foreground hover:bg-primary/10 hover:text-primary font-medium transition-all duration-200 hover:shadow-sm";
 
   return (
     <Sidebar className="border-r border-border w-64" collapsible="none">
@@ -153,21 +153,24 @@ export function AppSidebar() {
 
         {/* Menu Principal */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
             Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {groupedItems.principal.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/"} 
-                      className={getNavCls}
+                      className={({ isActive }) => `
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                        ${getNavCls({ isActive })}
+                      `}
                     >
-                      <item.icon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{item.title}</span>
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      <span className="truncate font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -178,20 +181,23 @@ export function AppSidebar() {
 
         {/* Menu Clínico */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
             Clínico
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {groupedItems.clinico.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={getNavCls}
+                      className={({ isActive }) => `
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                        ${getNavCls({ isActive })}
+                      `}
                     >
-                      <item.icon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{item.title}</span>
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      <span className="truncate font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -202,20 +208,23 @@ export function AppSidebar() {
 
         {/* Menu Gestão */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
             Gestão
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {groupedItems.gestao.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={getNavCls}
+                      className={({ isActive }) => `
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                        ${getNavCls({ isActive })}
+                      `}
                     >
-                      <item.icon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{item.title}</span>
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      <span className="truncate font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
