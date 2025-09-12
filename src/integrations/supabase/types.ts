@@ -127,6 +127,50 @@ export type Database = {
           },
         ]
       }
+      bloqueios_agenda: {
+        Row: {
+          created_at: string
+          data_fim: string
+          data_inicio: string
+          dentista_id: string | null
+          id: string
+          motivo: string | null
+          tipo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_fim: string
+          data_inicio: string
+          dentista_id?: string | null
+          id?: string
+          motivo?: string | null
+          tipo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_fim?: string
+          data_inicio?: string
+          dentista_id?: string | null
+          id?: string
+          motivo?: string | null
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bloqueios_agenda_dentista_id_fkey"
+            columns: ["dentista_id"]
+            isOneToOne: false
+            referencedRelation: "dentistas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dentistas: {
         Row: {
           created_at: string
