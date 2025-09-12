@@ -473,6 +473,54 @@ export type Database = {
           },
         ]
       }
+      planos_pagamento: {
+        Row: {
+          created_at: string
+          forma_pagamento_entrada: string | null
+          forma_pagamento_parcelas: string
+          id: string
+          numero_parcelas: number
+          observacoes: string | null
+          paciente_id: string
+          status: string | null
+          updated_at: string
+          user_id: string
+          valor_entrada: number | null
+          valor_parcela: number
+          valor_total: number
+        }
+        Insert: {
+          created_at?: string
+          forma_pagamento_entrada?: string | null
+          forma_pagamento_parcelas: string
+          id?: string
+          numero_parcelas?: number
+          observacoes?: string | null
+          paciente_id: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          valor_entrada?: number | null
+          valor_parcela: number
+          valor_total: number
+        }
+        Update: {
+          created_at?: string
+          forma_pagamento_entrada?: string | null
+          forma_pagamento_parcelas?: string
+          id?: string
+          numero_parcelas?: number
+          observacoes?: string | null
+          paciente_id?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          valor_entrada?: number | null
+          valor_parcela?: number
+          valor_total?: number
+        }
+        Relationships: []
+      }
       procedimentos: {
         Row: {
           ativo: boolean | null
