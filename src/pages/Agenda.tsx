@@ -39,8 +39,39 @@ const Agenda = () => {
   }, [user]);
 
   const handleGoogleCalendarSync = async () => {
-    toast.info('Funcionalidade de sincronização será implementada em breve');
-    // Aqui será implementada a funcionalidade de sincronização com Google Calendar
+    try {
+      if (userSettings?.google_calendar_enabled) {
+        // Se já está conectado, mostrar opções de gerenciamento
+        toast.info('Funcionalidade de gerenciamento será implementada em breve');
+        return;
+      }
+
+      // Solicitar URL de autorização do Google
+      const { data, error } = await supabase.functions.invoke('google-calendar-auth', {
+        body: { action: 'get_auth_url' }
+      });
+
+      if (error) {
+        console.error('Erro ao obter URL de autorização:', error);
+        toast.error('Erro ao conectar com Google Calendar');
+        return;
+      }
+
+      // Redirecionar para o Google OAuth
+      window.open(data.authUrl, '_blank', 'width=500,height=600');
+      
+      // Aguardar confirmação (em uma implementação real, seria melhor usar postMessage)
+      toast.success('Janela de autorização aberta. Complete a autorização e volte aqui.');
+      
+      // Atualizar configurações após um delay para dar tempo da autorização
+      setTimeout(() => {
+        fetchUserSettings();
+      }, 3000);
+
+    } catch (error) {
+      console.error('Erro na sincronização:', error);
+      toast.error('Erro ao conectar com Google Calendar');
+    }
   };
 
   if (loading) {
