@@ -668,6 +668,7 @@ export type Database = {
           google_client_secret: string | null
           google_refresh_token: string | null
           id: string
+          taxa_juros_cartao: number | null
           updated_at: string
           user_id: string
         }
@@ -682,6 +683,7 @@ export type Database = {
           google_client_secret?: string | null
           google_refresh_token?: string | null
           id?: string
+          taxa_juros_cartao?: number | null
           updated_at?: string
           user_id: string
         }
@@ -696,6 +698,7 @@ export type Database = {
           google_client_secret?: string | null
           google_refresh_token?: string | null
           id?: string
+          taxa_juros_cartao?: number | null
           updated_at?: string
           user_id?: string
         }

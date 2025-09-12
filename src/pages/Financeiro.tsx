@@ -46,6 +46,7 @@ const Financeiro = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlano, setEditingPlano] = useState<PlanosPagamento | null>(null);
+  const [taxaJurosCartao, setTaxaJurosCartao] = useState<number>(2.5);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -102,9 +103,24 @@ const Financeiro = () => {
     if (user) {
       fetchPacientes();
       fetchPlanosPagamento();
+      fetchTaxaJuros();
       setLoading(false);
     }
   }, [user]);
+
+  const fetchTaxaJuros = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('user_settings')
+      .select('taxa_juros_cartao')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    
+    if (data) {
+      setTaxaJurosCartao((data as any).taxa_juros_cartao || 2.5);
+    }
+  };
 
   const calculateParcelaDisplay = (plano: PlanosPagamento) => {
     const valorTotal = plano.valor_total || plano.valor;
@@ -112,7 +128,15 @@ const Financeiro = () => {
     const numeroParcelas = plano.numero_parcelas || 1;
     
     const valorRestante = valorTotal - valorEntrada;
-    return valorRestante / numeroParcelas;
+    let valorParcela = valorRestante / numeroParcelas;
+    
+    // Aplicar juros se for cartão e acima de 3x
+    if (plano.forma_pagamento === 'cartao' && numeroParcelas > 3) {
+      const taxaTotal = 1 + (taxaJurosCartao * numeroParcelas / 100);
+      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+    }
+    
+    return valorParcela;
   };
 
   const calculateParcela = () => {
@@ -121,7 +145,15 @@ const Financeiro = () => {
     const numeroParcelas = parseInt(formData.numero_parcelas) || 1;
     
     const valorRestante = valorTotal - valorEntrada;
-    return valorRestante / numeroParcelas;
+    let valorParcela = valorRestante / numeroParcelas;
+    
+    // Aplicar juros se for cartão e acima de 3x
+    if (formData.forma_pagamento_parcelas === 'cartao' && numeroParcelas > 3) {
+      const taxaTotal = 1 + (taxaJurosCartao * numeroParcelas / 100);
+      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+    }
+    
+    return valorParcela;
   };
 
   const getMaxParcelas = () => {
@@ -388,7 +420,10 @@ const Financeiro = () => {
                       )}
                       <p>Parcelas: <span className="font-medium">{formData.numero_parcelas}x de R$ {calculateParcela().toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
                       {formData.forma_pagamento_parcelas === 'cartao' && parseInt(formData.numero_parcelas) > 3 && (
-                        <p className="text-amber-600 text-xs">⚠️ Parcelas acima de 3x terão juros da operadora da máquina</p>
+                        <div className="text-amber-600 text-xs space-y-1">
+                          <p>⚠️ Parcelas acima de 3x terão juros da operadora ({taxaJurosCartao}% por parcela)</p>
+                          <p>Valor total com juros: <span className="font-medium">R$ {(calculateParcela() * parseInt(formData.numero_parcelas) + parseFloat(formData.valor_entrada || '0')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
+                        </div>
                       )}
                     </div>
                   </div>
