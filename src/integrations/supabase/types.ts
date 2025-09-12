@@ -622,7 +622,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_agendamento_conflict: {
+        Args: {
+          p_agendamento_id?: string
+          p_data_agendamento: string
+          p_dentista_id: string
+          p_duracao_minutos: number
+        }
+        Returns: boolean
+      }
+      get_horarios_disponiveis: {
+        Args: {
+          p_data: string
+          p_dentista_id: string
+          p_duracao_minutos?: number
+        }
+        Returns: {
+          disponivel: boolean
+          horario_fim: string
+          horario_inicio: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
