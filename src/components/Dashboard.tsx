@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NovoClienteModal } from "@/components/NovoClienteModal";
+import { AgendarConsultaModal } from "@/components/AgendarConsultaModal";
 import { 
   Users, 
   Calendar, 
@@ -57,6 +58,7 @@ export function Dashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAgendamentoModalOpen, setIsAgendamentoModalOpen] = useState(false);
 
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
@@ -118,7 +120,7 @@ export function Dashboard() {
             <Plus className="w-4 h-4 mr-2" />
             Novo Paciente
           </Button>
-          <Button variant="outline">
+          <Button onClick={() => setIsAgendamentoModalOpen(true)} variant="outline">
             <Calendar className="w-4 h-4 mr-2" />
             Agendar Consulta
           </Button>
@@ -277,7 +279,7 @@ export function Dashboard() {
               <Users className="w-4 h-4 mr-2" />
               Cadastrar Paciente
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button onClick={() => setIsAgendamentoModalOpen(true)} variant="outline" className="w-full justify-start">
               <Calendar className="w-4 h-4 mr-2" />
               Nova Consulta
             </Button>
@@ -342,6 +344,11 @@ export function Dashboard() {
       <NovoClienteModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+      />
+      
+      <AgendarConsultaModal
+        open={isAgendamentoModalOpen}
+        onOpenChange={setIsAgendamentoModalOpen}
       />
     </div>
   );
