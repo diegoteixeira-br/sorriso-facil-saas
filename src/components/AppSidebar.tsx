@@ -119,6 +119,33 @@ export function AppSidebar() {
     };
 
     fetchClinicData();
+
+    // Setup real-time subscription to listen for profile changes
+    const subscription = supabase
+      .channel('profile_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'profiles',
+          filter: `user_id=eq.${user?.id}`
+        }, 
+        (payload) => {
+          console.log('Profile updated:', payload);
+          if (payload.new && typeof payload.new === 'object') {
+            const newData = payload.new as any;
+            setClinicData({
+              name: newData.clinic_name || 'Sorriso Fácil',
+              logo: newData.logo_url || undefined
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [user]);
 
   const isActive = (path: string) => {
