@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   TrendingUp,
   BarChart3,
@@ -13,6 +16,36 @@ import {
 } from "lucide-react";
 
 export default function Relatorios() {
+  const { user } = useAuth();
+  const [financialData, setFinancialData] = useState({
+    totalPendente: 0,
+    totalPago: 0,
+    totalGeral: 0
+  });
+
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      if (!user) return;
+      
+      const { data: pagamentos } = await supabase
+        .from('pagamentos')
+        .select('valor, status')
+        .eq('user_id', user.id);
+
+      if (pagamentos) {
+        const totalPendente = pagamentos.filter(p => p.status === 'pendente').reduce((sum, p) => sum + p.valor, 0);
+        const totalPago = pagamentos.filter(p => p.status === 'pago').reduce((sum, p) => sum + p.valor, 0);
+        
+        setFinancialData({
+          totalPendente,
+          totalPago,
+          totalGeral: totalPendente + totalPago
+        });
+      }
+    };
+
+    fetchFinancialData();
+  }, [user]);
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -31,6 +64,60 @@ export default function Relatorios() {
             Exportar
           </Button>
         </div>
+      </div>
+
+      {/* Resumo Financeiro */}
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
+        <Card className="animate-fade-in hover:shadow-medical transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Pendente
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              R$ {financialData.totalPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Pagamentos em aberto
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="animate-fade-in hover:shadow-medical transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Recebido
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              R$ {financialData.totalPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Pagamentos confirmados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="animate-fade-in hover:shadow-medical transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Geral
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              R$ {financialData.totalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Receita total
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Stats Cards */}
@@ -72,7 +159,7 @@ export default function Relatorios() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Novos Pacientes
             </CardTitle>
-            <Users className="h-4 w-4 text-primary" />
+            <Users className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-card-foreground">42</div>

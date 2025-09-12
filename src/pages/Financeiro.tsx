@@ -5,272 +5,233 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CreditCard, Plus, Calendar as CalendarIcon, DollarSign, Search, Edit, Trash2 } from "lucide-react";
+import { CreditCard, Plus, DollarSign, FileText, Mail, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+
 interface Paciente {
   id: string;
   nome: string;
+  email?: string;
 }
-interface Pagamento {
+
+interface PlanosPagamento {
   id: string;
   paciente_id: string;
   paciente?: {
     nome: string;
+    email?: string;
   };
-  valor: number;
-  forma_pagamento: string;
+  valor_total: number;
+  valor_entrada?: number;
+  forma_pagamento_entrada?: string;
+  forma_pagamento_parcelas: string;
+  numero_parcelas: number;
+  valor_parcela: number;
   status: string;
-  data_vencimento?: string;
-  data_pagamento?: string;
   observacoes?: string;
   created_at: string;
 }
+
 const Financeiro = () => {
-  const {
-    user
-  } = useAuth();
-  const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
+  const { user } = useAuth();
+  const [planosPagamento, setPlanosPagamento] = useState<PlanosPagamento[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPagamento, setEditingPagamento] = useState<Pagamento | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [editingPlano, setEditingPlano] = useState<PlanosPagamento | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
     paciente_id: '',
-    valor: '',
-    forma_pagamento: '',
-    status: 'pendente',
-    data_vencimento: undefined as Date | undefined,
-    data_pagamento: undefined as Date | undefined,
+    valor_total: '',
+    valor_entrada: '',
+    forma_pagamento_entrada: '',
+    forma_pagamento_parcelas: 'boleto',
+    numero_parcelas: '1',
     observacoes: ''
   });
-  const formasPagamento = ['Dinheiro', 'Cartão de Crédito', 'Cartão de Débito', 'PIX', 'Transferência Bancária', 'Boleto', 'Cheque'];
-  const statusPagamento = [{
-    value: 'pendente',
-    label: 'Pendente',
-    color: 'bg-yellow-100 text-yellow-800'
-  }, {
-    value: 'pago',
-    label: 'Pago',
-    color: 'bg-green-100 text-green-800'
-  }, {
-    value: 'atrasado',
-    label: 'Atrasado',
-    color: 'bg-red-100 text-red-800'
-  }, {
-    value: 'cancelado',
-    label: 'Cancelado',
-    color: 'bg-gray-100 text-gray-800'
-  }];
+
+  const formasPagamento = ['Dinheiro', 'Cartão de Crédito', 'Cartão de Débito', 'PIX', 'Transferência Bancária'];
+  const statusPlano = [
+    { value: 'ativo', label: 'Ativo', color: 'bg-green-100 text-green-800' },
+    { value: 'concluido', label: 'Concluído', color: 'bg-blue-100 text-blue-800' },
+    { value: 'cancelado', label: 'Cancelado', color: 'bg-red-100 text-red-800' }
+  ];
+
   const fetchPacientes = async () => {
-    const {
-      data,
-      error
-    } = await supabase.from('pacientes').select('id, nome').eq('user_id', user?.id).order('nome');
+    const { data, error } = await supabase
+      .from('pacientes')
+      .select('id, nome, email')
+      .eq('user_id', user?.id)
+      .order('nome');
+    
     if (error) {
       console.error('Erro ao carregar pacientes:', error);
       return;
     }
     setPacientes(data || []);
   };
-  const fetchPagamentos = async () => {
-    const {
-      data,
-      error
-    } = await supabase.from('pagamentos').select(`
+
+  const fetchPlanosPagamento = async () => {
+    const { data, error } = await supabase
+      .from('planos_pagamento')
+      .select(`
         *,
-        paciente:pacientes(nome)
-      `).eq('user_id', user?.id).order('created_at', {
-      ascending: false
-    });
+        paciente:pacientes(nome, email)
+      `)
+      .eq('user_id', user?.id)
+      .order('created_at', { ascending: false });
+    
     if (error) {
-      console.error('Erro ao carregar pagamentos:', error);
-      toast.error('Erro ao carregar pagamentos');
+      console.error('Erro ao carregar planos de pagamento:', error);
+      toast.error('Erro ao carregar planos de pagamento');
       return;
     }
-    setPagamentos(data || []);
+    setPlanosPagamento(data || []);
   };
+
   useEffect(() => {
     if (user) {
       fetchPacientes();
-      fetchPagamentos();
+      fetchPlanosPagamento();
       setLoading(false);
     }
   }, [user]);
+
+  const calculateParcela = () => {
+    const valorTotal = parseFloat(formData.valor_total) || 0;
+    const valorEntrada = parseFloat(formData.valor_entrada) || 0;
+    const numeroParcelas = parseInt(formData.numero_parcelas) || 1;
+    
+    const valorRestante = valorTotal - valorEntrada;
+    return valorRestante / numeroParcelas;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.paciente_id || !formData.valor || !formData.forma_pagamento) {
+    if (!formData.paciente_id || !formData.valor_total || !formData.forma_pagamento_parcelas) {
       toast.error('Preencha todos os campos obrigatórios');
       return;
     }
-    const pagamentoData = {
+
+    const valorParcela = calculateParcela();
+    
+    const planoData = {
       ...formData,
       user_id: user?.id,
-      valor: parseFloat(formData.valor),
-      data_vencimento: formData.data_vencimento?.toISOString().split('T')[0],
-      data_pagamento: formData.data_pagamento?.toISOString()
+      valor_total: parseFloat(formData.valor_total),
+      valor_entrada: formData.valor_entrada ? parseFloat(formData.valor_entrada) : null,
+      numero_parcelas: parseInt(formData.numero_parcelas),
+      valor_parcela: valorParcela,
+      status: 'ativo'
     };
+
     try {
-      if (editingPagamento) {
-        const {
-          error
-        } = await supabase.from('pagamentos').update(pagamentoData).eq('id', editingPagamento.id);
+      if (editingPlano) {
+        const { error } = await supabase
+          .from('planos_pagamento')
+          .update(planoData)
+          .eq('id', editingPlano.id);
+        
         if (error) throw error;
-        toast.success('Pagamento atualizado com sucesso!');
+        toast.success('Plano de pagamento atualizado com sucesso!');
       } else {
-        const {
-          error
-        } = await supabase.from('pagamentos').insert([pagamentoData]);
+        const { error } = await supabase
+          .from('planos_pagamento')
+          .insert([planoData]);
+        
         if (error) throw error;
-        toast.success('Pagamento registrado com sucesso!');
+        toast.success('Plano de pagamento criado com sucesso!');
       }
+
       setIsDialogOpen(false);
-      setEditingPagamento(null);
+      setEditingPlano(null);
       resetForm();
-      fetchPagamentos();
+      fetchPlanosPagamento();
     } catch (error) {
-      console.error('Erro ao salvar pagamento:', error);
-      toast.error('Erro ao salvar pagamento');
+      console.error('Erro ao salvar plano de pagamento:', error);
+      toast.error('Erro ao salvar plano de pagamento');
     }
   };
+
   const resetForm = () => {
     setFormData({
       paciente_id: '',
-      valor: '',
-      forma_pagamento: '',
-      status: 'pendente',
-      data_vencimento: undefined,
-      data_pagamento: undefined,
+      valor_total: '',
+      valor_entrada: '',
+      forma_pagamento_entrada: '',
+      forma_pagamento_parcelas: 'boleto',
+      numero_parcelas: '1',
       observacoes: ''
     });
   };
-  const handleEdit = (pagamento: Pagamento) => {
-    setEditingPagamento(pagamento);
-    setFormData({
-      paciente_id: pagamento.paciente_id,
-      valor: pagamento.valor.toString(),
-      forma_pagamento: pagamento.forma_pagamento,
-      status: pagamento.status,
-      data_vencimento: pagamento.data_vencimento ? new Date(pagamento.data_vencimento) : undefined,
-      data_pagamento: pagamento.data_pagamento ? new Date(pagamento.data_pagamento) : undefined,
-      observacoes: pagamento.observacoes || ''
-    });
-    setIsDialogOpen(true);
-  };
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este pagamento?')) return;
+
+  const handleGerarBoletos = async (planoId: string) => {
     try {
-      const {
-        error
-      } = await supabase.from('pagamentos').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Pagamento excluído com sucesso!');
-      fetchPagamentos();
+      // Aqui será implementada a integração com Asaas
+      toast.success('Boletos enviados para geração!');
     } catch (error) {
-      console.error('Erro ao excluir pagamento:', error);
-      toast.error('Erro ao excluir pagamento');
+      console.error('Erro ao gerar boletos:', error);
+      toast.error('Erro ao gerar boletos');
     }
   };
-  const filteredPagamentos = pagamentos.filter(pagamento => pagamento.paciente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) || pagamento.forma_pagamento.toLowerCase().includes(searchTerm.toLowerCase()));
+
   const getStatusBadge = (status: string) => {
-    const statusInfo = statusPagamento.find(s => s.value === status);
-    return <Badge className={statusInfo?.color}>
+    const statusInfo = statusPlano.find(s => s.value === status);
+    return (
+      <Badge className={statusInfo?.color}>
         {statusInfo?.label || status}
-      </Badge>;
+      </Badge>
+    );
   };
-  const totalPendente = pagamentos.filter(p => p.status === 'pendente').reduce((sum, p) => sum + p.valor, 0);
-  const totalPago = pagamentos.filter(p => p.status === 'pago').reduce((sum, p) => sum + p.valor, 0);
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-[400px]">Carregando...</div>;
   }
-  return <div className="container mx-auto p-6 max-w-7xl">
+
+  return (
+    <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-gradient-medical rounded-lg flex items-center justify-center">
           <CreditCard className="w-6 h-6 text-white" />
         </div>
         <div>
           <h1 className="text-3xl font-bold text-card-foreground">Financeiro</h1>
-          <p className="text-muted-foreground">Gerencie pagamentos e controle financeiro</p>
+          <p className="text-muted-foreground">Gerencie planos de pagamento e boletos</p>
         </div>
       </div>
 
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Pendente</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  R$ {totalPendente.toLocaleString('pt-BR', {
-                  minimumFractionDigits: 2
-                })}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Recebido</p>
-                <p className="text-2xl font-bold text-green-600">
-                  R$ {totalPago.toLocaleString('pt-BR', {
-                  minimumFractionDigits: 2
-                })}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Geral</p>
-                <p className="text-2xl font-bold text-primary">
-                  R$ {(totalPendente + totalPago).toLocaleString('pt-BR', {
-                  minimumFractionDigits: 2
-                })}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="pagamentos" className="space-y-6">
+      <Tabs defaultValue="planos" className="space-y-6">
         <div className="flex items-center justify-between">
-          
+          <TabsList>
+            <TabsTrigger value="planos">Planos de Pagamento</TabsTrigger>
+          </TabsList>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              
+              <Button 
+                className="bg-gradient-medical hover:opacity-90"
+                onClick={() => {
+                  setEditingPlano(null);
+                  resetForm();
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Plano de Pagamento
+              </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
-                  {editingPagamento ? 'Editar Pagamento' : 'Novo Pagamento'}
+                  {editingPlano ? 'Editar Plano de Pagamento' : 'Novo Plano de Pagamento'}
                 </DialogTitle>
                 <DialogDescription>
-                  {editingPagamento ? 'Atualize as informações do pagamento' : 'Registre um novo pagamento'}
+                  Configure como o paciente irá pagar pelo tratamento
                 </DialogDescription>
               </DialogHeader>
 
@@ -278,61 +239,66 @@ const Financeiro = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="paciente_id">Paciente *</Label>
-                    <Select value={formData.paciente_id} onValueChange={value => setFormData(prev => ({
-                    ...prev,
-                    paciente_id: value
-                  }))} required>
+                    <Select 
+                      value={formData.paciente_id} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, paciente_id: value }))}
+                      required
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o paciente" />
                       </SelectTrigger>
                       <SelectContent>
-                        {pacientes.map(paciente => <SelectItem key={paciente.id} value={paciente.id}>
+                        {pacientes.map(paciente => (
+                          <SelectItem key={paciente.id} value={paciente.id}>
                             {paciente.nome}
-                          </SelectItem>)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="valor">Valor *</Label>
-                    <Input id="valor" type="number" step="0.01" placeholder="0,00" value={formData.valor} onChange={e => setFormData(prev => ({
-                    ...prev,
-                    valor: e.target.value
-                  }))} required />
+                    <Label htmlFor="valor_total">Valor Total do Tratamento *</Label>
+                    <Input 
+                      id="valor_total" 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="0,00" 
+                      value={formData.valor_total}
+                      onChange={(e) => setFormData(prev => ({ ...prev, valor_total: e.target.value }))}
+                      required 
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="forma_pagamento">Forma de Pagamento *</Label>
-                    <Select value={formData.forma_pagamento} onValueChange={value => setFormData(prev => ({
-                    ...prev,
-                    forma_pagamento: value
-                  }))} required>
+                    <Label htmlFor="valor_entrada">Valor da Entrada (Opcional)</Label>
+                    <Input 
+                      id="valor_entrada" 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="0,00" 
+                      value={formData.valor_entrada}
+                      onChange={(e) => setFormData(prev => ({ ...prev, valor_entrada: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="forma_pagamento_entrada">Forma de Pagamento da Entrada</Label>
+                    <Select 
+                      value={formData.forma_pagamento_entrada} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, forma_pagamento_entrada: value }))}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione a forma" />
                       </SelectTrigger>
                       <SelectContent>
-                        {formasPagamento.map(forma => <SelectItem key={forma} value={forma}>
+                        {formasPagamento.map(forma => (
+                          <SelectItem key={forma} value={forma}>
                             {forma}
-                          </SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={value => setFormData(prev => ({
-                    ...prev,
-                    status: value
-                  }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusPagamento.map(status => <SelectItem key={status.value} value={status.value}>
-                            {status.label}
-                          </SelectItem>)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -340,48 +306,64 @@ const Financeiro = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Data de Vencimento</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.data_vencimento && "text-muted-foreground")}>
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.data_vencimento ? format(formData.data_vencimento, "dd/MM/yyyy") : "Selecionar data"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={formData.data_vencimento} onSelect={date => setFormData(prev => ({
-                        ...prev,
-                        data_vencimento: date
-                      }))} initialFocus className="pointer-events-auto" />
-                      </PopoverContent>
-                    </Popover>
+                    <Label htmlFor="forma_pagamento_parcelas">Forma de Pagamento das Parcelas *</Label>
+                    <Select 
+                      value={formData.forma_pagamento_parcelas} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, forma_pagamento_parcelas: value }))}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="boleto">Boleto Bancário</SelectItem>
+                        <SelectItem value="cartao">Cartão de Crédito</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Data de Pagamento</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.data_pagamento && "text-muted-foreground")}>
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.data_pagamento ? format(formData.data_pagamento, "dd/MM/yyyy") : "Selecionar data"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={formData.data_pagamento} onSelect={date => setFormData(prev => ({
-                        ...prev,
-                        data_pagamento: date
-                      }))} initialFocus className="pointer-events-auto" />
-                      </PopoverContent>
-                    </Popover>
+                    <Label htmlFor="numero_parcelas">Número de Parcelas *</Label>
+                    <Select 
+                      value={formData.numero_parcelas} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, numero_parcelas: value }))}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                          <SelectItem key={num} value={num.toString()}>
+                            {num}x
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
+                {formData.valor_total && (
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">Resumo do Plano:</h4>
+                    <div className="space-y-1 text-sm">
+                      <p>Valor Total: <span className="font-medium">R$ {parseFloat(formData.valor_total || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
+                      {formData.valor_entrada && (
+                        <p>Entrada: <span className="font-medium">R$ {parseFloat(formData.valor_entrada).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
+                      )}
+                      <p>Parcelas: <span className="font-medium">{formData.numero_parcelas}x de R$ {calculateParcela().toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="observacoes">Observações</Label>
-                  <Input id="observacoes" placeholder="Observações sobre o pagamento" value={formData.observacoes} onChange={e => setFormData(prev => ({
-                  ...prev,
-                  observacoes: e.target.value
-                }))} />
+                  <Input 
+                    id="observacoes" 
+                    placeholder="Observações sobre o plano de pagamento" 
+                    value={formData.observacoes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                  />
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
@@ -389,7 +371,7 @@ const Financeiro = () => {
                     Cancelar
                   </Button>
                   <Button type="submit" className="bg-gradient-medical hover:opacity-90">
-                    {editingPagamento ? 'Atualizar' : 'Registrar'} Pagamento
+                    {editingPlano ? 'Atualizar' : 'Criar'} Plano
                   </Button>
                 </div>
               </form>
@@ -397,74 +379,92 @@ const Financeiro = () => {
           </Dialog>
         </div>
 
-        <TabsContent value="pagamentos" className="space-y-6">
+        <TabsContent value="planos" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Lista de Pagamentos</CardTitle>
-                  <CardDescription>Gerencie todos os pagamentos da clínica</CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder="Buscar pagamentos..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 w-64" />
-                  </div>
-                </div>
-              </div>
+              <CardTitle>Planos de Pagamento</CardTitle>
+              <CardDescription>Gerencie os planos de pagamento dos tratamentos</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Paciente</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Forma de Pagamento</TableHead>
+                    <TableHead>Valor Total</TableHead>
+                    <TableHead>Entrada</TableHead>
+                    <TableHead>Parcelas</TableHead>
+                    <TableHead>Forma Pagamento</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead>Pagamento</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPagamentos.length > 0 ? filteredPagamentos.map(pagamento => <TableRow key={pagamento.id}>
+                  {planosPagamento.length > 0 ? (
+                    planosPagamento.map(plano => (
+                      <TableRow key={plano.id}>
                         <TableCell className="font-medium">
-                          {pagamento.paciente?.nome}
+                          {plano.paciente?.nome}
                         </TableCell>
                         <TableCell>
-                          R$ {pagamento.valor.toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2
-                    })}
-                        </TableCell>
-                        <TableCell>{pagamento.forma_pagamento}</TableCell>
-                        <TableCell>{getStatusBadge(pagamento.status)}</TableCell>
-                        <TableCell>
-                          {pagamento.data_vencimento ? format(new Date(pagamento.data_vencimento), 'dd/MM/yyyy') : '-'}
+                          R$ {plano.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell>
-                          {pagamento.data_pagamento ? format(new Date(pagamento.data_pagamento), 'dd/MM/yyyy') : '-'}
+                          {plano.valor_entrada 
+                            ? `R$ ${plano.valor_entrada.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                            : 'Sem entrada'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {plano.numero_parcelas}x de R$ {plano.valor_parcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {plano.forma_pagamento_parcelas === 'boleto' ? 'Boleto' : 'Cartão'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(plano.status)}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(pagamento)}>
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(pagamento.id)} className="text-destructive hover:text-destructive">
-                              <Trash2 className="w-4 h-4" />
+                            {plano.forma_pagamento_parcelas === 'boleto' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleGerarBoletos(plano.id)}
+                              >
+                                <FileText className="w-4 h-4 mr-1" />
+                                Gerar Boletos
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                // Implementar edição
+                              }}
+                            >
+                              Editar
                             </Button>
                           </div>
                         </TableCell>
-                      </TableRow>) : <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        {searchTerm ? 'Nenhum pagamento encontrado com o termo pesquisado' : 'Nenhum pagamento registrado ainda'}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                        Nenhum plano de pagamento encontrado
                       </TableCell>
-                    </TableRow>}
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 };
+
 export default Financeiro;
