@@ -5,21 +5,21 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Plus, Plane, Coffee, Calendar as CalendarLucide } from "lucide-react";
 
 const BloqueiosFerias = () => {
-  const [bloqueios, setBloqueios] = useState([
+  const [bloqueios] = useState([
     {
       id: '1',
       tipo: 'ferias',
       dentista: 'Dr. João Silva',
-      data_inicio: '2024-01-15',
-      data_fim: '2024-01-30',
+      data_inicio: '15/01/2024',
+      data_fim: '30/01/2024',
       motivo: 'Férias anuais'
     },
     {
       id: '2',
       tipo: 'feriado',
-      dentista: 'Todos',
-      data_inicio: '2024-02-13',
-      data_fim: '2024-02-13',
+      dentista: 'Todos os dentistas',
+      data_inicio: '13/02/2024',
+      data_fim: '13/02/2024',
       motivo: 'Carnaval'
     }
   ]);
