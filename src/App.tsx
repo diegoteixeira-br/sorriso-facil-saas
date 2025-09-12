@@ -10,6 +10,7 @@ import Agenda from "./pages/Agenda";
 import Configuracoes from "./pages/Configuracoes";
 import Procedimentos from "./pages/Procedimentos";
 import Orcamentos from "./pages/Orcamentos";
+import Financeiro from "./pages/Financeiro";
 import Relatorios from "./pages/Relatorios";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
@@ -82,6 +83,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Orcamentos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/financeiro" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Financeiro />
                 </Layout>
               </ProtectedRoute>
             } />
