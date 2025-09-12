@@ -47,6 +47,7 @@ const Financeiro = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlano, setEditingPlano] = useState<PlanosPagamento | null>(null);
   const [taxaJurosCartao, setTaxaJurosCartao] = useState<number>(2.5);
+  const [taxaJurosBoleto, setTaxaJurosBoleto] = useState<number>(1.5);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -113,12 +114,13 @@ const Financeiro = () => {
     
     const { data } = await supabase
       .from('user_settings')
-      .select('taxa_juros_cartao')
+      .select('taxa_juros_cartao, taxa_juros_boleto')
       .eq('user_id', user.id)
       .maybeSingle();
     
     if (data) {
       setTaxaJurosCartao((data as any).taxa_juros_cartao || 2.5);
+      setTaxaJurosBoleto((data as any).taxa_juros_boleto || 1.5);
     }
   };
 
@@ -130,9 +132,15 @@ const Financeiro = () => {
     const valorRestante = valorTotal - valorEntrada;
     let valorParcela = valorRestante / numeroParcelas;
     
-    // Aplicar juros se for cartão e acima de 3x
-    if (plano.forma_pagamento === 'cartao' && numeroParcelas > 3) {
+    // Aplicar juros se for cartão e acima de 1x
+    if (plano.forma_pagamento === 'cartao' && numeroParcelas > 1) {
       const taxaTotal = 1 + (taxaJurosCartao * numeroParcelas / 100);
+      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+    }
+    
+    // Aplicar juros se for boleto e acima de 1x
+    if (plano.forma_pagamento === 'boleto' && numeroParcelas > 1) {
+      const taxaTotal = 1 + (taxaJurosBoleto * numeroParcelas / 100);
       valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
     }
     
@@ -147,9 +155,15 @@ const Financeiro = () => {
     const valorRestante = valorTotal - valorEntrada;
     let valorParcela = valorRestante / numeroParcelas;
     
-    // Aplicar juros se for cartão e acima de 3x
-    if (formData.forma_pagamento_parcelas === 'cartao' && numeroParcelas > 3) {
+    // Aplicar juros se for cartão e acima de 1x
+    if (formData.forma_pagamento_parcelas === 'cartao' && numeroParcelas > 1) {
       const taxaTotal = 1 + (taxaJurosCartao * numeroParcelas / 100);
+      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+    }
+    
+    // Aplicar juros se for boleto e acima de 1x
+    if (formData.forma_pagamento_parcelas === 'boleto' && numeroParcelas > 1) {
+      const taxaTotal = 1 + (taxaJurosBoleto * numeroParcelas / 100);
       valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
     }
     
@@ -403,8 +417,8 @@ const Financeiro = () => {
                     </Select>
                     <p className="text-xs text-muted-foreground">
                       {formData.forma_pagamento_parcelas === 'boleto' 
-                        ? 'Boleto bancário: até 36 parcelas' 
-                        : 'Cartão de crédito: até 3x sem juros, acima com juros da operadora'
+                        ? 'Boleto bancário: 1x sem juros, acima com juros' 
+                        : 'Cartão de crédito: 1x sem juros, acima com juros'
                       }
                     </p>
                   </div>
@@ -419,9 +433,15 @@ const Financeiro = () => {
                         <p>Entrada: <span className="font-medium">R$ {parseFloat(formData.valor_entrada).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
                       )}
                       <p>Parcelas: <span className="font-medium">{formData.numero_parcelas}x de R$ {calculateParcela().toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
-                      {formData.forma_pagamento_parcelas === 'cartao' && parseInt(formData.numero_parcelas) > 3 && (
+                      {formData.forma_pagamento_parcelas === 'cartao' && parseInt(formData.numero_parcelas) > 1 && (
                         <div className="text-amber-600 text-xs space-y-1">
-                          <p>⚠️ Parcelas acima de 3x terão juros da operadora ({taxaJurosCartao}% por parcela)</p>
+                          <p>⚠️ Parcelas acima de 1x terão juros da operadora ({taxaJurosCartao}% por parcela)</p>
+                          <p>Valor total com juros: <span className="font-medium">R$ {(calculateParcela() * parseInt(formData.numero_parcelas) + parseFloat(formData.valor_entrada || '0')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
+                        </div>
+                      )}
+                      {formData.forma_pagamento_parcelas === 'boleto' && parseInt(formData.numero_parcelas) > 1 && (
+                        <div className="text-amber-600 text-xs space-y-1">
+                          <p>⚠️ Parcelas acima de 1x terão juros ({taxaJurosBoleto}% por parcela)</p>
                           <p>Valor total com juros: <span className="font-medium">R$ {(calculateParcela() * parseInt(formData.numero_parcelas) + parseFloat(formData.valor_entrada || '0')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
                         </div>
                       )}

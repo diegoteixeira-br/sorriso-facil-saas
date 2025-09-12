@@ -25,6 +25,7 @@ interface AsaasSettings {
 
 interface MaquinaSettings {
   taxa_juros_cartao?: number;
+  taxa_juros_boleto?: number;
 }
 
 const Configuracoes = () => {
@@ -36,7 +37,8 @@ const Configuracoes = () => {
     environment: 'sandbox'
   });
   const [maquinaSettings, setMaquinaSettings] = useState<MaquinaSettings>({
-    taxa_juros_cartao: 2.5
+    taxa_juros_cartao: 2.5,
+    taxa_juros_boleto: 1.5
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -80,7 +82,8 @@ const Configuracoes = () => {
         });
         
         setMaquinaSettings({
-          taxa_juros_cartao: (asaasData as any).taxa_juros_cartao || 2.5
+          taxa_juros_cartao: (asaasData as any).taxa_juros_cartao || 2.5,
+          taxa_juros_boleto: (asaasData as any).taxa_juros_boleto || 1.5
         });
       }
     } catch (error) {
@@ -195,7 +198,8 @@ const Configuracoes = () => {
           asaas_api_key: asaasSettings.api_key,
           asaas_webhook_token: asaasSettings.webhook_token,
           asaas_environment: asaasSettings.environment,
-          taxa_juros_cartao: maquinaSettings.taxa_juros_cartao
+          taxa_juros_cartao: maquinaSettings.taxa_juros_cartao,
+          taxa_juros_boleto: maquinaSettings.taxa_juros_boleto
         }, {
           onConflict: 'user_id'
         });
@@ -518,9 +522,9 @@ const Configuracoes = () => {
             <CardContent>
               <form onSubmit={handleSaveAsaasSettings} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="taxa_juros">Taxa de Juros por Parcela (%)</Label>
+                  <Label htmlFor="taxa_juros_cartao">Taxa de Juros Cartão (%)</Label>
                   <Input
-                    id="taxa_juros"
+                    id="taxa_juros_cartao"
                     type="number"
                     step="0.01"
                     min="0"
@@ -533,17 +537,50 @@ const Configuracoes = () => {
                     }))}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Taxa de juros aplicada por parcela acima de 3x no cartão de crédito
+                    Taxa de juros aplicada por parcela acima de 1x no cartão de crédito
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="taxa_juros_boleto">Taxa de Juros Boleto (%)</Label>
+                  <Input
+                    id="taxa_juros_boleto"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="10"
+                    placeholder="1.5"
+                    value={maquinaSettings.taxa_juros_boleto || ''}
+                    onChange={(e) => setMaquinaSettings(prev => ({
+                      ...prev,
+                      taxa_juros_boleto: parseFloat(e.target.value)
+                    }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Taxa de juros aplicada por parcela acima de 1x no boleto bancário
                   </p>
                 </div>
 
                 <div className="bg-muted/50 p-4 rounded-lg">
                   <h4 className="font-medium mb-2">Como funciona:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Até 3x: sem juros</li>
-                    <li>4x ou mais: aplica {maquinaSettings.taxa_juros_cartao || 2.5}% de juros por parcela</li>
-                    <li>Exemplo: 10x = 10 × {maquinaSettings.taxa_juros_cartao || 2.5}% = {((maquinaSettings.taxa_juros_cartao || 2.5) * 10).toFixed(1)}% total</li>
-                  </ul>
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <div>
+                      <p className="font-medium">Cartão de Crédito:</p>
+                      <ul className="list-disc list-inside ml-2">
+                        <li>1x: sem juros</li>
+                        <li>2x ou mais: aplica {maquinaSettings.taxa_juros_cartao || 2.5}% de juros por parcela</li>
+                        <li>Exemplo: 10x = 10 × {maquinaSettings.taxa_juros_cartao || 2.5}% = {((maquinaSettings.taxa_juros_cartao || 2.5) * 10).toFixed(1)}% total</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="font-medium">Boleto Bancário:</p>
+                      <ul className="list-disc list-inside ml-2">
+                        <li>1x: sem juros</li>
+                        <li>2x ou mais: aplica {maquinaSettings.taxa_juros_boleto || 1.5}% de juros por parcela</li>
+                        <li>Exemplo: 12x = 12 × {maquinaSettings.taxa_juros_boleto || 1.5}% = {((maquinaSettings.taxa_juros_boleto || 1.5) * 12).toFixed(1)}% total</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-end pt-4">
