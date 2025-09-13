@@ -354,24 +354,6 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                         </div>
                         <div className="flex items-center gap-2">
                           {getStatusBadge(agendamento.status)}
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditarConsulta(agendamento.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleExcluirConsulta(agendamento.id)}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
                         </div>
                       </div>
                     ))}
