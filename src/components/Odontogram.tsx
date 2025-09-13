@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useImperativeHandle, forwardRef } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 
@@ -18,11 +18,26 @@ interface ToothState {
 interface OdontogramProps {
   onToothSelect: (tooth: number | null, faces: string[]) => void;
   selectedTeeth?: ToothState;
+  clearSelection?: () => void;
 }
 
-export function Odontogram({ onToothSelect, selectedTeeth = {} }: OdontogramProps) {
+export interface OdontogramRef {
+  clearSelection: () => void;
+}
+
+export const Odontogram = forwardRef<OdontogramRef, OdontogramProps>(({ onToothSelect, selectedTeeth = {} }, ref) => {
   const [toothStates, setToothStates] = useState<ToothState>(selectedTeeth);
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
+
+  const clearSelection = () => {
+    setSelectedTooth(null);
+    setToothStates({});
+    onToothSelect(null, []);
+  };
+
+  useImperativeHandle(ref, () => ({
+    clearSelection
+  }));
 
   // Dentes permanentes (11-48)
   const permanentTeeth = {
@@ -299,4 +314,4 @@ const handleToothClick = (toothNumber: number) => {
       )}
     </div>
   );
-}
+});

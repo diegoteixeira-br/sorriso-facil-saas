@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FileText, Plus, Trash2, Save, FileCheck, Check, ChevronsUpDown, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Odontogram } from "@/components/Odontogram";
+import { Odontogram, type OdontogramRef } from "@/components/Odontogram";
 import { ContratoModal } from "@/components/ContratoModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -53,6 +53,7 @@ export default function Orcamentos() {
   const [isLoading, setIsLoading] = useState(true);
   const [openPacienteCombobox, setOpenPacienteCombobox] = useState(false);
   const [searchPaciente, setSearchPaciente] = useState("");
+  const odontogramRef = useRef<OdontogramRef>(null);
   
   // Estados para o plano de pagamento
   const [orcamentoSalvo, setOrcamentoSalvo] = useState<any>(null);
@@ -166,6 +167,9 @@ export default function Orcamentos() {
     setObservacoes("");
     setSelectedTooth(null);
     setSelectedFaces([]);
+    
+    // Clear odontogram selection
+    odontogramRef.current?.clearSelection();
   };
 
   const removeOrcamentoItem = (id: string) => {
@@ -388,7 +392,7 @@ export default function Orcamentos() {
                 <CardTitle>Seleção de Dentes</CardTitle>
               </CardHeader>
               <CardContent>
-                <Odontogram onToothSelect={handleToothSelect} />
+                <Odontogram ref={odontogramRef} onToothSelect={handleToothSelect} />
                 {selectedTooth && (
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                     <p className="font-medium">Dente selecionado: {selectedTooth}</p>
