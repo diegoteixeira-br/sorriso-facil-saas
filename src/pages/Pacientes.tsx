@@ -113,25 +113,57 @@ export default function Pacientes() {
 
   const loadPatients = async () => {
     try {
+      // Buscar pacientes com suas últimas consultas
       const { data, error } = await supabase
         .from("pacientes")
-        .select("*")
+        .select(`
+          *,
+          agendamentos!inner(data_agendamento)
+        `)
         .order("nome");
 
       if (error) throw error;
 
+      // Buscar também pacientes sem agendamentos
+      const { data: patientsWithoutAppointments, error: error2 } = await supabase
+        .from("pacientes")
+        .select("*")
+        .not("id", "in", `(${data?.map(p => `'${p.id}'`).join(",") || "''"})`)
+        .order("nome");
+
+      if (error2) throw error2;
+
       // Transformar dados do Supabase para o formato esperado
-      const transformedPatients = data?.map(patient => ({
+      const patientsWithAppointments = data?.map(patient => {
+        // Buscar a data mais recente de agendamento
+        const lastAppointment = patient.agendamentos
+          ?.sort((a: any, b: any) => new Date(b.data_agendamento).getTime() - new Date(a.data_agendamento).getTime())[0];
+
+        return {
+          id: patient.id,
+          nome: patient.nome,
+          telefone: patient.telefone || "",
+          email: patient.email || "",
+          data_nascimento: patient.data_nascimento || "",
+          ultima_consulta: lastAppointment?.data_agendamento || "",
+          status: "ativo" as const,
+        };
+      }) || [];
+
+      const patientsWithoutAppointmentsTransformed = patientsWithoutAppointments?.map(patient => ({
         id: patient.id,
         nome: patient.nome,
         telefone: patient.telefone || "",
         email: patient.email || "",
         data_nascimento: patient.data_nascimento || "",
-        ultima_consulta: "2024-01-01", // Placeholder - pode ser obtido de agendamentos
-        status: "ativo" as const, // Placeholder - pode adicionar campo status na tabela
+        ultima_consulta: "",
+        status: "ativo" as const,
       })) || [];
 
-      setPatients(transformedPatients);
+      const allPatients = [...patientsWithAppointments, ...patientsWithoutAppointmentsTransformed]
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+
+      setPatients(allPatients);
     } catch (error) {
       console.error("Erro ao carregar pacientes:", error);
       toast({
