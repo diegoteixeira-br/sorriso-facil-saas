@@ -189,7 +189,8 @@ const AgendaPorDentista = () => {
           </Popover>
         </div>
 
-        <div className="flex items-end pt-7">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Ações</label>
           <Button 
             onClick={() => setIsAgendamentoModalOpen(true)}
             className="bg-gradient-medical"
