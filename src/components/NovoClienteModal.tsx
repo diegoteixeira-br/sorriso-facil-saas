@@ -89,11 +89,20 @@ export function NovoClienteModal({ open, onOpenChange, onSuccess }: NovoClienteM
 
       onOpenChange(false);
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao cadastrar paciente:", error);
+      
+      let errorMessage = "Erro ao cadastrar paciente";
+      
+      if (error?.code === "23505" && error?.message?.includes("pacientes_cpf_key")) {
+        errorMessage = "Já existe um paciente cadastrado com este CPF";
+      } else if (error?.code === "23505") {
+        errorMessage = "Dados duplicados - verifique CPF ou outros campos únicos";
+      }
+      
       toast({
         title: "Erro",
-        description: "Erro ao cadastrar paciente",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
