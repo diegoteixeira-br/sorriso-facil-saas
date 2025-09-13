@@ -39,7 +39,7 @@ const CalendarioClinico = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [dentistas, setDentistas] = useState<Dentista[]>([]);
-  const [selectedDentista, setSelectedDentista] = useState<string>("todos");
+  const [selectedDentista, setSelectedDentista] = useState<string>("");
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAgendamentoModalOpen, setIsAgendamentoModalOpen] = useState(false);
@@ -51,19 +51,19 @@ const CalendarioClinico = () => {
       const startDate = startOfMonth(currentDate);
       const endDate = endOfMonth(currentDate);
 
-  let query = supabase
-    .from('agendamentos')
-    .select(`
-      *,
-      pacientes(nome),
-      dentistas(nome)
-    `)
-    .eq('user_id', user.id)
-    .gte('data_agendamento', startDate.toISOString())
-    .lte('data_agendamento', endDate.toISOString())
-    .order('data_agendamento');
+      let query = supabase
+        .from('agendamentos')
+        .select(`
+          *,
+          pacientes(nome),
+          dentistas(nome)
+        `)
+        .eq('user_id', user.id)
+        .gte('data_agendamento', startDate.toISOString())
+        .lte('data_agendamento', endDate.toISOString())
+        .order('data_agendamento');
 
-      if (selectedDentista !== "todos") {
+      if (selectedDentista) {
         query = query.eq('dentista_id', selectedDentista);
       }
 
@@ -91,6 +91,11 @@ const CalendarioClinico = () => {
       if (error) throw error;
 
       setDentistas(data || []);
+      
+      // Se ainda não há dentista selecionado e há dentistas disponíveis, selecionar o primeiro
+      if (!selectedDentista && data && data.length > 0) {
+        setSelectedDentista(data[0].id);
+      }
     } catch (error) {
       console.error('Erro ao carregar dentistas:', error);
     }
@@ -229,10 +234,9 @@ const CalendarioClinico = () => {
 
           <Select value={selectedDentista} onValueChange={setSelectedDentista}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filtrar por dentista" />
+              <SelectValue placeholder="Selecionar dentista" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos os dentistas</SelectItem>
               {dentistas.map((dentista) => (
                 <SelectItem key={dentista.id} value={dentista.id}>
                   {dentista.nome}
@@ -304,6 +308,9 @@ const CalendarioClinico = () => {
                                   <div className="truncate leading-tight">
                                     {hourAgendamentos[0].pacientes?.nome || 'Paciente'}
                                   </div>
+                                  <div className="truncate leading-tight text-[8px] opacity-70">
+                                    {hourAgendamentos[0].dentistas?.nome || 'Dr.'}
+                                  </div>
                                 </div>
                               ) : (
                                 <div className="h-3 border-b border-dotted border-muted-foreground/20"></div>
@@ -325,6 +332,9 @@ const CalendarioClinico = () => {
                           </div>
                           <div className="truncate text-[9px]">
                             {agendamento.pacientes?.nome || 'Paciente'}
+                          </div>
+                          <div className="truncate text-[8px] opacity-70">
+                            {agendamento.dentistas?.nome || 'Dr.'}
                           </div>
                         </div>
                       ))}
