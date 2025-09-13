@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CreditCard, Plus, DollarSign, FileText, Mail, Download, Edit, Trash2 } from "lucide-react";
+import { CreditCard, Plus, DollarSign, FileText, Mail, Download, Edit, Trash2, FileCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { ContratoModal } from "@/components/ContratoModal";
 
 interface Paciente {
   id: string;
@@ -57,6 +58,8 @@ const Financeiro = () => {
   const [editingPlano, setEditingPlano] = useState<PlanosPagamento | null>(null);
   const [taxaJurosCartao, setTaxaJurosCartao] = useState<number>(2.5);
   const [taxaJurosBoleto, setTaxaJurosBoleto] = useState<number>(1.5);
+  const [contratoModalOpen, setContratoModalOpen] = useState(false);
+  const [selectedPlanoId, setSelectedPlanoId] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -627,14 +630,25 @@ const Financeiro = () => {
                                 Gerar Boletos
                               </Button>
                             )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditarPlano(plano)}
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Editar
-                            </Button>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => {
+                                 setSelectedPlanoId(plano.id);
+                                 setContratoModalOpen(true);
+                               }}
+                             >
+                               <FileCheck className="w-4 h-4 mr-1" />
+                               Contrato
+                             </Button>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => handleEditarPlano(plano)}
+                             >
+                               <Edit className="w-4 h-4 mr-1" />
+                               Editar
+                             </Button>
                             <Button
                               variant="outline"
                               size="icon"
@@ -660,6 +674,12 @@ const Financeiro = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ContratoModal
+        open={contratoModalOpen}
+        onOpenChange={setContratoModalOpen}
+        planoId={selectedPlanoId || undefined}
+      />
     </div>
   );
 };

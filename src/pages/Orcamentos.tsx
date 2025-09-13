@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Plus, Trash2, Save } from "lucide-react";
+import { FileText, Plus, Trash2, Save, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Odontogram } from "@/components/Odontogram";
+import { ContratoModal } from "@/components/ContratoModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -46,6 +47,8 @@ export default function Orcamentos() {
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [selectedFaces, setSelectedFaces] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [contratoModalOpen, setContratoModalOpen] = useState(false);
+  const [orcamentoSalvoId, setOrcamentoSalvoId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -186,6 +189,9 @@ export default function Orcamentos() {
         description: "Orçamento salvo com sucesso!",
       });
 
+      // Salvar o ID do orçamento para gerar contrato
+      setOrcamentoSalvoId(orcamento.id);
+
       // Reset form
       setSelectedPaciente("");
       setOrcamentoItens([]);
@@ -206,10 +212,21 @@ export default function Orcamentos() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Orçamentos</h1>
-        <Button onClick={saveOrcamento} disabled={orcamentoItens.length === 0}>
-          <Save className="mr-2 h-4 w-4" />
-          Salvar Orçamento
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={saveOrcamento} disabled={orcamentoItens.length === 0}>
+            <Save className="mr-2 h-4 w-4" />
+            Salvar Orçamento
+          </Button>
+          {orcamentoSalvoId && (
+            <Button
+              onClick={() => setContratoModalOpen(true)}
+              variant="outline"
+            >
+              <FileCheck className="mr-2 h-4 w-4" />
+              Gerar Contrato
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -389,6 +406,12 @@ export default function Orcamentos() {
           </Card>
         </div>
       </div>
+
+      <ContratoModal
+        open={contratoModalOpen}
+        onOpenChange={setContratoModalOpen}
+        orcamentoId={orcamentoSalvoId || undefined}
+      />
     </div>
   );
 }
