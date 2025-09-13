@@ -58,12 +58,23 @@ export function NovoClienteModal({ open, onOpenChange, onSuccess }: NovoClienteM
         throw new Error("Usuário não autenticado");
       }
 
+      const payload = {
+        ...formData,
+        cpf: formData.cpf?.trim() ? formData.cpf.trim() : null,
+        email: formData.email?.trim() ? formData.email.trim() : null,
+        telefone: formData.telefone?.trim() || "",
+        responsavel: formData.responsavel?.trim() || "",
+        telefone_responsavel: formData.telefone_responsavel?.trim() || "",
+        endereco: formData.endereco?.trim() || "",
+        profissao: formData.profissao?.trim() || "",
+        estado_civil: formData.estado_civil || null,
+        observacoes: formData.observacoes?.trim() || "",
+        user_id: user.user.id,
+      };
+
       const { error } = await supabase
         .from("pacientes")
-        .insert([{
-          ...formData,
-          user_id: user.user.id,
-        }]);
+        .insert([payload]);
 
       if (error) throw error;
 
