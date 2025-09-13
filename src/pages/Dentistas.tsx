@@ -57,7 +57,13 @@ const Dentistas = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user?.id) {
+      toast.error('Erro: usuário não autenticado');
+      return;
+    }
+
+    console.log('Dados do dentista:', formData);
+    console.log('User ID:', user.id);
 
     const dentistData = {
       ...formData,
@@ -80,14 +86,16 @@ const Dentistas = () => {
         fetchDentistas();
       }
     } else {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('dentistas')
-        .insert(dentistData);
+        .insert(dentistData)
+        .select();
 
       if (error) {
-        toast.error('Erro ao cadastrar dentista');
-        console.error(error);
+        console.error('Erro detalhado:', error);
+        toast.error(`Erro ao cadastrar dentista: ${error.message}`);
       } else {
+        console.log('Dentista cadastrado:', data);
         toast.success('Dentista cadastrado com sucesso!');
         setDialogOpen(false);
         resetForm();
