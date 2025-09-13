@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +14,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { 
-  Calendar, 
+  Calendar as CalendarIcon, 
   Clock,
   Stethoscope,
   Plus,
@@ -40,7 +49,8 @@ interface Procedimento {
 }
 
 interface NovoProcedimento {
-  data: string;
+  data: Date | undefined;
+  hora: string;
   procedimento: string;
   observacoes: string;
   status: string;
@@ -52,7 +62,8 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
   const [procedimentosCadastrados, setProcedimentosCadastrados] = useState<any[]>([]);
   const [dentistas, setDentistas] = useState<any[]>([]);
   const [novoProcedimento, setNovoProcedimento] = useState<NovoProcedimento>({
-    data: "",
+    data: undefined,
+    hora: "09:00",
     procedimento: "",
     observacoes: "",
     status: "realizado",
@@ -167,13 +178,18 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
       return;
     }
 
+    // Combine date and time
+    const [hours, minutes] = novoProcedimento.hora.split(':');
+    const dataCompleta = new Date(novoProcedimento.data);
+    dataCompleta.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
     setIsSaving(true);
     try {
       const { error } = await supabase
         .from("agendamentos")
         .insert({
           paciente_id: pacienteId,
-          data_agendamento: novoProcedimento.data,
+          data_agendamento: dataCompleta.toISOString(),
           procedimento: novoProcedimento.procedimento,
           observacoes: novoProcedimento.observacoes,
           status: novoProcedimento.status,
@@ -188,7 +204,8 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
       });
 
       setNovoProcedimento({
-        data: "",
+        data: undefined,
+        hora: "09:00",
         procedimento: "",
         observacoes: "",
         status: "realizado",
@@ -300,21 +317,42 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="nova-data">Data *</Label>
-                    <Input
-                      id="nova-data"
-                      type="datetime-local"
-                      value={novoProcedimento.data}
-                      onChange={(e) => {
-                        // Handle datetime-local input correctly for timezone
-                        const localDate = new Date(e.target.value);
-                        const offset = localDate.getTimezoneOffset();
-                        const utcDate = new Date(localDate.getTime() + (offset * 60 * 1000));
-                        setNovoProcedimento(prev => ({ ...prev, data: utcDate.toISOString() }));
-                      }}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="nova-data">Data *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !novoProcedimento.data && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {novoProcedimento.data ? format(novoProcedimento.data, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={novoProcedimento.data}
+                        onSelect={(date) => setNovoProcedimento(prev => ({ ...prev, data: date }))}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <Label htmlFor="nova-hora">Hora *</Label>
+                  <Input
+                    id="nova-hora"
+                    type="time"
+                    value={novoProcedimento.hora}
+                    onChange={(e) => setNovoProcedimento(prev => ({ ...prev, hora: e.target.value }))}
+                  />
+                </div>
                 <div>
                   <Label htmlFor="novo-procedimento">Procedimento *</Label>
                   <select
@@ -444,15 +482,27 @@ function ProcedimentoItem({
   onDelete, 
   getStatusBadge 
 }: ProcedimentoItemProps) {
-  const [editData, setEditData] = useState({
-    data: procedimento.data,
-    procedimento: procedimento.procedimento,
-    observacoes: procedimento.observacoes,
-    status: procedimento.status
+  const [editData, setEditData] = useState(() => {
+    const dataOriginal = new Date(procedimento.data);
+    return {
+      data: dataOriginal,
+      hora: format(dataOriginal, "HH:mm"),
+      procedimento: procedimento.procedimento,
+      observacoes: procedimento.observacoes,
+      status: procedimento.status
+    };
   });
 
   const handleSave = () => {
-    onSave(editData);
+    // Combine date and time
+    const [hours, minutes] = editData.hora.split(':');
+    const dataCompleta = new Date(editData.data);
+    dataCompleta.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    
+    onSave({
+      ...editData,
+      data: dataCompleta.toISOString()
+    });
   };
 
   if (isEditing) {
@@ -462,10 +512,36 @@ function ProcedimentoItem({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Data</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !editData.data && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editData.data ? format(editData.data, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={editData.data}
+                    onSelect={(date) => setEditData(prev => ({ ...prev, data: date || new Date() }))}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label>Hora</Label>
               <Input
-                type="datetime-local"
-                value={editData.data}
-                onChange={(e) => setEditData(prev => ({ ...prev, data: e.target.value }))}
+                type="time"
+                value={editData.hora}
+                onChange={(e) => setEditData(prev => ({ ...prev, hora: e.target.value }))}
               />
             </div>
             <div>
