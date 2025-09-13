@@ -172,9 +172,33 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
       });
 
       if (conflitosEncontrados && conflitosEncontrados.length > 0) {
+        // Buscar nomes dos pacientes e dentistas para mensagem mais detalhada
+        const [pacientesData, dentistasData] = await Promise.all([
+          supabase.from("pacientes").select("id, nome").in("id", conflitosEncontrados.map(c => c.paciente_id)),
+          supabase.from("dentistas").select("id, nome").in("id", conflitosEncontrados.map(c => c.dentista_id))
+        ]);
+
+        const conflito = conflitosEncontrados[0];
+        const inicioConflito = new Date(conflito.data_agendamento);
+        const fimConflito = new Date(inicioConflito);
+        fimConflito.setMinutes(fimConflito.getMinutes() + conflito.duracao_minutos);
+
+        const horarioConflito = `${inicioConflito.getHours().toString().padStart(2, '0')}:${inicioConflito.getMinutes().toString().padStart(2, '0')}`;
+        const horarioFimConflito = `${fimConflito.getHours().toString().padStart(2, '0')}:${fimConflito.getMinutes().toString().padStart(2, '0')}`;
+
+        let mensagemConflito = "";
+        
+        if (conflito.paciente_id === formData.paciente_id) {
+          const pacienteNome = pacientesData.data?.find(p => p.id === conflito.paciente_id)?.nome || "Este paciente";
+          mensagemConflito = `${pacienteNome} já possui uma consulta agendada das ${horarioConflito} às ${horarioFimConflito}.`;
+        } else if (conflito.dentista_id === formData.dentista_id) {
+          const dentistaNome = dentistasData.data?.find(d => d.id === conflito.dentista_id)?.nome || "Este dentista";
+          mensagemConflito = `${dentistaNome} já possui uma consulta agendada das ${horarioConflito} às ${horarioFimConflito}.`;
+        }
+
         toast({
           title: "Conflito de Horário",
-          description: "Já existe um agendamento para este paciente ou dentista neste horário",
+          description: `${mensagemConflito} Escolha outro horário.`,
           variant: "destructive",
         });
         setIsLoading(false);
@@ -217,9 +241,24 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
       onSuccess?.();
     } catch (error) {
       console.error("Erro ao agendar consulta:", error);
+      
+      let errorMessage = "Erro inesperado ao agendar consulta";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("duplicate key")) {
+          errorMessage = "Já existe uma consulta agendada para este horário";
+        } else if (error.message.includes("violates foreign key")) {
+          errorMessage = "Paciente ou dentista selecionado não é válido";
+        } else if (error.message.includes("not authenticated")) {
+          errorMessage = "Você precisa estar logado para agendar consultas";
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: "Erro",
-        description: "Erro ao agendar consulta",
+        title: "Erro ao Agendar",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
