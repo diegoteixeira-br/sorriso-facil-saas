@@ -230,7 +230,15 @@ const Dentistas = () => {
                     <SelectItem value="Implantodontia (implantes)">Implantodontia (implantes)</SelectItem>
                     <SelectItem value="Odontopediatria (crianças)">Odontopediatria (crianças)</SelectItem>
                     <SelectItem value="Odontogeriatria (idosos)">Odontogeriatria (idosos)</SelectItem>
-                    <SelectItem value="Cirurgia e Traumatologia Buco-Maxilo-Facial (tratamento de lesões e deformidades faciais)">Cirurgia e Traumatologia Buco-Maxilo-Facial (tratamento de lesões e deformidades faciais)</SelectItem>
+                    <SelectItem value="Cirurgia e Traumatologia Bucomaxilofacial (lesões na face e mandíbula)">Cirurgia e Traumatologia Bucomaxilofacial (lesões na face e mandíbula)</SelectItem>
+                    <SelectItem value="Estomatologia (doenças da boca)">Estomatologia (doenças da boca)</SelectItem>
+                    <SelectItem value="Odontologia para Pacientes com Necessidades Especiais">Odontologia para Pacientes com Necessidades Especiais</SelectItem>
+                    <SelectItem value="Radiologia Odontológica e Imaginologia (exames de imagem)">Radiologia Odontológica e Imaginologia (exames de imagem)</SelectItem>
+                    <SelectItem value="Disfunção Temporomandibular e Dor Orofacial (ATM)">Disfunção Temporomandibular e Dor Orofacial (ATM)</SelectItem>
+                    <SelectItem value="Harmonização Orofacial (estética facial)">Harmonização Orofacial (estética facial)</SelectItem>
+                    <SelectItem value="Odontologia do Trabalho (saúde bucal ocupacional)">Odontologia do Trabalho (saúde bucal ocupacional)</SelectItem>
+                    <SelectItem value="Odontologia Legal (perícias odontológicas)">Odontologia Legal (perícias odontológicas)</SelectItem>
+                    <SelectItem value="Patologia Oral e Maxilofacial (diagnóstico de doenças)">Patologia Oral e Maxilofacial (diagnóstico de doenças)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
