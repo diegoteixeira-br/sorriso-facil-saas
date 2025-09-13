@@ -35,9 +35,9 @@ serve(async (req) => {
 
     // Definir preços e nomes dos planos
     const plans = {
-      basic: { price: 2999, name: "Plano Básico - Sorriso Fácil" }, // R$ 29,99
-      premium: { price: 7999, name: "Plano Premium - Sorriso Fácil" }, // R$ 79,99
-      enterprise: { price: 15999, name: "Plano Enterprise - Sorriso Fácil" } // R$ 159,99
+      basic: { price: 2999, name: "Plano Básico - System Dental" }, // R$ 29,99
+      premium: { price: 7999, name: "Plano Premium - System Dental" }, // R$ 79,99
+      enterprise: { price: 15999, name: "Plano Enterprise - System Dental" } // R$ 159,99
     };
 
     const selectedPlan = plans[plan as keyof typeof plans];

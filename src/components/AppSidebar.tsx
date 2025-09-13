@@ -97,7 +97,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   
   const [clinicData, setClinicData] = React.useState<{ name: string; logo?: string }>({ 
-    name: 'Sorriso Fácil' 
+    name: 'System Dental' 
   });
 
   React.useEffect(() => {
@@ -112,7 +112,7 @@ export function AppSidebar() {
       
       if (data) {
         setClinicData({
-          name: data.clinic_name || 'Sorriso Fácil',
+          name: data.clinic_name || 'System Dental',
           logo: data.logo_url || undefined
         });
       }
@@ -135,7 +135,7 @@ export function AppSidebar() {
           if (payload.new && typeof payload.new === 'object') {
             const newData = payload.new as any;
             setClinicData({
-              name: newData.clinic_name || 'Sorriso Fácil',
+              name: newData.clinic_name || 'System Dental',
               logo: newData.logo_url || undefined
             });
           }
