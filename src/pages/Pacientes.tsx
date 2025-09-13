@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { NovoClienteModal } from "@/components/NovoClienteModal";
+import { VisualizarPacienteModal } from "@/components/VisualizarPacienteModal";
+import { EditarPacienteModal } from "@/components/EditarPacienteModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -17,7 +19,8 @@ import {
   Calendar,
   Edit,
   Trash,
-  Eye
+  Eye,
+  Loader2
 } from "lucide-react";
 import {
   Table,
@@ -33,6 +36,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Patient {
   id: string;
@@ -82,7 +95,12 @@ export default function Pacientes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isVisualizarModalOpen, setIsVisualizarModalOpen] = useState(false);
+  const [isEditarModalOpen, setIsEditarModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedPacienteId, setSelectedPacienteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -125,6 +143,53 @@ export default function Pacientes() {
 
   const handleNewPatient = () => {
     setIsModalOpen(true);
+  };
+
+  const handleVisualizarPaciente = (pacienteId: string) => {
+    setSelectedPacienteId(pacienteId);
+    setIsVisualizarModalOpen(true);
+  };
+
+  const handleEditarPaciente = (pacienteId: string) => {
+    setSelectedPacienteId(pacienteId);
+    setIsEditarModalOpen(true);
+  };
+
+  const handleExcluirPaciente = (pacienteId: string) => {
+    setSelectedPacienteId(pacienteId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedPacienteId) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("pacientes")
+        .delete()
+        .eq("id", selectedPacienteId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Paciente excluído com sucesso!",
+      });
+
+      loadPatients();
+      setIsDeleteDialogOpen(false);
+      setSelectedPacienteId(null);
+    } catch (error) {
+      console.error("Erro ao excluir paciente:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir paciente",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const filteredPatients = patients.filter(patient =>
@@ -264,15 +329,18 @@ export default function Pacientes() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleVisualizarPaciente(patient.id)}>
                             <Eye className="mr-2 h-4 w-4" />
                             Visualizar
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditarPaciente(patient.id)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem 
+                            className="text-destructive" 
+                            onClick={() => handleExcluirPaciente(patient.id)}
+                          >
                             <Trash className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
@@ -292,6 +360,42 @@ export default function Pacientes() {
         onOpenChange={setIsModalOpen}
         onSuccess={loadPatients}
       />
+
+      <VisualizarPacienteModal
+        open={isVisualizarModalOpen}
+        onOpenChange={setIsVisualizarModalOpen}
+        pacienteId={selectedPacienteId}
+      />
+
+      <EditarPacienteModal
+        open={isEditarModalOpen}
+        onOpenChange={setIsEditarModalOpen}
+        pacienteId={selectedPacienteId}
+        onSuccess={loadPatients}
+      />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este paciente? Esta ação não pode ser desfeita.
+              Todos os dados relacionados (consultas, pagamentos, etc.) serão perdidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
