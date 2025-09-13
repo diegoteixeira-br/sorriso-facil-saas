@@ -346,6 +346,9 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
             ` : ''}
             <p><strong>Parcelamento:</strong> ${data.plano.numero_parcelas}x de R$ ${data.plano.valor_parcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} 
             (${data.plano.forma_pagamento_parcelas})</p>
+            <div class="total" style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+              <strong>VALOR TOTAL A SER PAGO: R$ ${((data.plano.valor_entrada || 0) + (data.plano.numero_parcelas * data.plano.valor_parcela)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+            </div>
           </div>
         ` : ''}
 
@@ -461,9 +464,14 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
             <div class="section">
               <div class="section-title">CONDIÇÕES DE PAGAMENTO:</div>
               ${data.plano.valor_entrada ? `
-                <p><strong>Entrada:</strong> R$ ${data.plano.valor_entrada.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                <p><strong>Entrada:</strong> R$ ${data.plano.valor_entrada.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} 
+                ${data.plano.forma_pagamento_entrada ? `(${data.plano.forma_pagamento_entrada})` : ''}</p>
               ` : ''}
-              <p><strong>Parcelamento:</strong> ${data.plano.numero_parcelas}x de R$ ${data.plano.valor_parcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+              <p><strong>Parcelamento:</strong> ${data.plano.numero_parcelas}x de R$ ${data.plano.valor_parcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} 
+              (${data.plano.forma_pagamento_parcelas})</p>
+              <div class="total" style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+                <strong>VALOR TOTAL A SER PAGO: R$ ${((data.plano.valor_entrada || 0) + (data.plano.numero_parcelas * data.plano.valor_parcela)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+              </div>
             </div>
           ` : ''}
 
