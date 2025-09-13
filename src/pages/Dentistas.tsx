@@ -65,8 +65,16 @@ const Dentistas = () => {
     console.log('Dados do dentista:', formData);
     console.log('User ID:', user.id);
 
+    const email = formData.email?.trim() || '';
+    const telefone = formData.telefone?.trim() || '';
+    const especialidade = formData.especialidade?.trim() || '';
+
     const dentistData = {
-      ...formData,
+      nome: formData.nome.trim(),
+      cro: formData.cro.trim(),
+      especialidade: especialidade || null,
+      email: email || null,
+      telefone: telefone || null,
       user_id: user.id
     };
 
@@ -77,8 +85,12 @@ const Dentistas = () => {
         .eq('id', editingDentista.id);
 
       if (error) {
-        toast.error('Erro ao atualizar dentista');
-        console.error(error);
+        console.error('Erro detalhado (update):', error);
+        if ((error as any).code === '23505' && (error as any).message?.includes('dentistas_email_key')) {
+          toast.error('Já existe um dentista com este e-mail. Altere o e-mail ou deixe em branco.');
+        } else {
+          toast.error('Erro ao atualizar dentista');
+        }
       } else {
         toast.success('Dentista atualizado com sucesso!');
         setDialogOpen(false);
@@ -92,8 +104,12 @@ const Dentistas = () => {
         .select();
 
       if (error) {
-        console.error('Erro detalhado:', error);
-        toast.error(`Erro ao cadastrar dentista: ${error.message}`);
+        console.error('Erro detalhado (insert):', error);
+        if ((error as any).code === '23505' && (error as any).message?.includes('dentistas_email_key')) {
+          toast.error('Já existe um dentista com este e-mail. Altere o e-mail ou deixe em branco.');
+        } else {
+          toast.error(`Erro ao cadastrar dentista: ${error.message}`);
+        }
       } else {
         console.log('Dentista cadastrado:', data);
         toast.success('Dentista cadastrado com sucesso!');
