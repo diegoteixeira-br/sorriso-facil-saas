@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EditarConsultaModal } from "./EditarConsultaModal";
+import { EditarProcedimentoModal } from "./EditarProcedimentoModal";
 import { UploadArquivosPaciente } from "./UploadArquivosPaciente";
 import { 
   Calendar, 
@@ -94,6 +95,7 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
   const [consultaParaEditar, setConsultaParaEditar] = useState<string | null>(null);
   const [excluirConsultaModalOpen, setExcluirConsultaModalOpen] = useState(false);
   const [consultaParaExcluir, setConsultaParaExcluir] = useState<string | null>(null);
+  const [editarProcedimentoModalOpen, setEditarProcedimentoModalOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -346,9 +348,20 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
             {/* Histórico de Consultas */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Histórico de Consultas ({agendamentos.length})
+                <CardTitle className="text-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Histórico de Consultas ({agendamentos.length})
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditarProcedimentoModalOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Editar Procedimentos
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -445,6 +458,12 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
             setEditarConsultaModalOpen(false);
             setConsultaParaEditar(null);
           }}
+        />
+
+        <EditarProcedimentoModal
+          open={editarProcedimentoModalOpen}
+          onOpenChange={setEditarProcedimentoModalOpen}
+          pacienteId={pacienteId}
         />
 
         <AlertDialog open={excluirConsultaModalOpen} onOpenChange={setExcluirConsultaModalOpen}>

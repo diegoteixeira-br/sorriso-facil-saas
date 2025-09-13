@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { NovoClienteModal } from "@/components/NovoClienteModal";
 import { VisualizarPacienteModal } from "@/components/VisualizarPacienteModal";
 import { EditarPacienteModal } from "@/components/EditarPacienteModal";
-import { EditarProcedimentoModal } from "@/components/EditarProcedimentoModal";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -22,7 +22,7 @@ import {
   Trash,
   Eye,
   Loader2,
-  Stethoscope
+  
 } from "lucide-react";
 import {
   Table,
@@ -100,7 +100,7 @@ export default function Pacientes() {
   const [isVisualizarModalOpen, setIsVisualizarModalOpen] = useState(false);
   const [isEditarModalOpen, setIsEditarModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditarProcedimentoModalOpen, setIsEditarProcedimentoModalOpen] = useState(false);
+  
   const [selectedPacienteId, setSelectedPacienteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -158,10 +158,6 @@ export default function Pacientes() {
     setIsEditarModalOpen(true);
   };
 
-  const handleEditarProcedimento = (pacienteId: string) => {
-    setSelectedPacienteId(pacienteId);
-    setIsEditarProcedimentoModalOpen(true);
-  };
 
   const handleExcluirPaciente = (pacienteId: string) => {
     setSelectedPacienteId(pacienteId);
@@ -341,10 +337,6 @@ export default function Pacientes() {
                             <Eye className="mr-2 h-4 w-4" />
                             Visualizar
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditarProcedimento(patient.id)}>
-                            <Stethoscope className="mr-2 h-4 w-4" />
-                            Editar Procedimento
-                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditarPaciente(patient.id)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
@@ -386,11 +378,6 @@ export default function Pacientes() {
         onSuccess={loadPatients}
       />
 
-      <EditarProcedimentoModal
-        open={isEditarProcedimentoModalOpen}
-        onOpenChange={setIsEditarProcedimentoModalOpen}
-        pacienteId={selectedPacienteId}
-      />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
