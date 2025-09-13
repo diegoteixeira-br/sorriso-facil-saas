@@ -50,8 +50,6 @@ export default function Orcamentos() {
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [selectedFaces, setSelectedFaces] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [contratoModalOpen, setContratoModalOpen] = useState(false);
-  const [orcamentoSalvoId, setOrcamentoSalvoId] = useState<string | null>(null);
   const [openPacienteCombobox, setOpenPacienteCombobox] = useState(false);
   const [searchPaciente, setSearchPaciente] = useState("");
   const { toast } = useToast();
@@ -194,8 +192,6 @@ export default function Orcamentos() {
         description: "Orçamento salvo com sucesso!",
       });
 
-      // Salvar o ID do orçamento para gerar contrato
-      setOrcamentoSalvoId(orcamento.id);
 
       // Reset form
       setSelectedPaciente("");
@@ -222,15 +218,6 @@ export default function Orcamentos() {
             <Save className="mr-2 h-4 w-4" />
             Salvar Orçamento
           </Button>
-          {orcamentoSalvoId && (
-            <Button
-              onClick={() => setContratoModalOpen(true)}
-              variant="outline"
-            >
-              <FileCheck className="mr-2 h-4 w-4" />
-              Gerar Contrato
-            </Button>
-          )}
         </div>
       </div>
 
@@ -454,11 +441,6 @@ export default function Orcamentos() {
         </div>
       </div>
 
-      <ContratoModal
-        open={contratoModalOpen}
-        onOpenChange={setContratoModalOpen}
-        orcamentoId={orcamentoSalvoId || undefined}
-      />
     </div>
   );
 }
