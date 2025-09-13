@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +27,8 @@ interface NovoPagamentoModalProps {
 export const NovoPagamentoModal = ({ open, onOpenChange }: NovoPagamentoModalProps) => {
   const { user } = useAuth();
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [openPacienteCombobox, setOpenPacienteCombobox] = useState(false);
+  const [searchPaciente, setSearchPaciente] = useState("");
   
   // Form state
   const [formData, setFormData] = useState({
@@ -134,22 +137,60 @@ export const NovoPagamentoModal = ({ open, onOpenChange }: NovoPagamentoModalPro
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="paciente_id">Paciente *</Label>
-              <Select 
-                value={formData.paciente_id} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, paciente_id: value }))}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o paciente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {pacientes.map((paciente) => (
-                    <SelectItem key={paciente.id} value={paciente.id}>
-                      {paciente.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openPacienteCombobox} onOpenChange={setOpenPacienteCombobox}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openPacienteCombobox}
+                    className="w-full justify-between"
+                  >
+                    {formData.paciente_id 
+                      ? pacientes.find(p => p.id === formData.paciente_id)?.nome || "Paciente não encontrado"
+                      : "Buscar paciente..."
+                    }
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder="Digite o nome do paciente..." 
+                      value={searchPaciente}
+                      onValueChange={setSearchPaciente}
+                    />
+                    <CommandList>
+                      <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
+                      <CommandGroup>
+                        {pacientes
+                          .filter(paciente => 
+                            paciente.nome.toLowerCase().includes(searchPaciente.toLowerCase())
+                          )
+                          .map(paciente => (
+                            <CommandItem
+                              key={paciente.id}
+                              value={paciente.nome}
+                              onSelect={() => {
+                                setFormData(prev => ({ ...prev, paciente_id: paciente.id }));
+                                setOpenPacienteCombobox(false);
+                                setSearchPaciente("");
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.paciente_id === paciente.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {paciente.nome}
+                            </CommandItem>
+                          ))
+                        }
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">

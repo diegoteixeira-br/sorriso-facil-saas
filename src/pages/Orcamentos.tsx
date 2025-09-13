@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
-import { FileText, Plus, Trash2, Save, FileCheck } from "lucide-react";
+import { FileText, Plus, Trash2, Save, FileCheck, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Odontogram } from "@/components/Odontogram";
 import { ContratoModal } from "@/components/ContratoModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Procedimento {
   id: string;
@@ -49,6 +52,8 @@ export default function Orcamentos() {
   const [isLoading, setIsLoading] = useState(true);
   const [contratoModalOpen, setContratoModalOpen] = useState(false);
   const [orcamentoSalvoId, setOrcamentoSalvoId] = useState<string | null>(null);
+  const [openPacienteCombobox, setOpenPacienteCombobox] = useState(false);
+  const [searchPaciente, setSearchPaciente] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -261,18 +266,60 @@ export default function Orcamentos() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="paciente">Paciente</Label>
-                  <Select value={selectedPaciente} onValueChange={setSelectedPaciente}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um paciente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pacientes.map((paciente) => (
-                        <SelectItem key={paciente.id} value={paciente.id}>
-                          {paciente.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openPacienteCombobox} onOpenChange={setOpenPacienteCombobox}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openPacienteCombobox}
+                        className="w-full justify-between"
+                      >
+                        {selectedPaciente 
+                          ? pacientes.find(p => p.id === selectedPaciente)?.nome || "Paciente não encontrado"
+                          : "Buscar paciente..."
+                        }
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Digite o nome do paciente..." 
+                          value={searchPaciente}
+                          onValueChange={setSearchPaciente}
+                        />
+                        <CommandList>
+                          <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {pacientes
+                              .filter(paciente => 
+                                paciente.nome.toLowerCase().includes(searchPaciente.toLowerCase())
+                              )
+                              .map(paciente => (
+                                <CommandItem
+                                  key={paciente.id}
+                                  value={paciente.nome}
+                                  onSelect={() => {
+                                    setSelectedPaciente(paciente.id);
+                                    setOpenPacienteCombobox(false);
+                                    setSearchPaciente("");
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedPaciente === paciente.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {paciente.nome}
+                                </CommandItem>
+                              ))
+                            }
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </CardContent>
