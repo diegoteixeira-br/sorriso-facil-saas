@@ -637,12 +637,11 @@ const Financeiro = () => {
                             </Button>
                             <Button
                               variant="outline"
-                              size="sm"
+                              size="icon"
                               onClick={() => handleExcluirPlano(plano.id)}
-                              className="text-destructive hover:text-destructive"
+                              className="text-destructive hover:text-destructive h-8 w-8"
                             >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Excluir
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </TableCell>
