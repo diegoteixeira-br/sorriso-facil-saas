@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EditarConsultaModal } from "./EditarConsultaModal";
+import { UploadArquivosPaciente } from "./UploadArquivosPaciente";
 import { 
   Calendar, 
   Phone, 
@@ -73,10 +74,21 @@ interface Pagamento {
   forma_pagamento: string;
 }
 
+interface ArquivoPaciente {
+  id: string;
+  nome_arquivo: string;
+  tipo_arquivo: string;
+  tamanho_arquivo: number;
+  descricao?: string;
+  storage_path: string;
+  created_at: string;
+}
+
 export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: VisualizarPacienteModalProps) {
   const [paciente, setPaciente] = useState<PacienteDetalhes | null>(null);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
+  const [arquivos, setArquivos] = useState<ArquivoPaciente[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editarConsultaModalOpen, setEditarConsultaModalOpen] = useState(false);
   const [consultaParaEditar, setConsultaParaEditar] = useState<string | null>(null);
@@ -124,6 +136,16 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
 
       if (pagamentosError) throw pagamentosError;
       setPagamentos(pagamentosData || []);
+
+      // Carregar arquivos do paciente
+      const { data: arquivosData, error: arquivosError } = await supabase
+        .from("paciente_arquivos")
+        .select("*")
+        .eq("paciente_id", pacienteId)
+        .order("created_at", { ascending: false });
+
+      if (arquivosError) throw arquivosError;
+      setArquivos(arquivosData || []);
 
     } catch (error) {
       console.error("Erro ao carregar dados do paciente:", error);
@@ -401,6 +423,16 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                 )}
               </CardContent>
             </Card>
+
+            {/* Arquivos do Paciente */}
+            {pacienteId && (
+              <UploadArquivosPaciente
+                pacienteId={pacienteId}
+                pacienteNome={paciente.nome}
+                arquivos={arquivos}
+                onArquivoAdicionado={loadPacienteData}
+              />
+            )}
           </div>
         ) : null}
 

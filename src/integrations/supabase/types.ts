@@ -346,6 +346,45 @@ export type Database = {
           },
         ]
       }
+      paciente_arquivos: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          nome_arquivo: string
+          paciente_id: string
+          storage_path: string
+          tamanho_arquivo: number | null
+          tipo_arquivo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome_arquivo: string
+          paciente_id: string
+          storage_path: string
+          tamanho_arquivo?: number | null
+          tipo_arquivo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome_arquivo?: string
+          paciente_id?: string
+          storage_path?: string
+          tamanho_arquivo?: number | null
+          tipo_arquivo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pacientes: {
         Row: {
           cpf: string | null
