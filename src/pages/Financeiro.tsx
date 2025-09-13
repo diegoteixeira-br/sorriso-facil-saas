@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CreditCard, Plus, DollarSign, FileText, Mail, Download } from "lucide-react";
+import { CreditCard, Plus, DollarSign, FileText, Mail, Download, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -280,6 +280,43 @@ const Financeiro = () => {
     } catch (error) {
       console.error('Erro ao gerar boletos:', error);
       toast.error('Erro ao gerar boletos');
+    }
+  };
+
+  const handleEditarPlano = (plano: PlanosPagamento) => {
+    setEditingPlano(plano);
+    setFormData({
+      paciente_id: plano.paciente_id,
+      orcamento_id: '', // Reset para carregar orçamentos do paciente
+      valor_total: (plano.valor_total || plano.valor).toString(),
+      valor_entrada: plano.valor_entrada ? plano.valor_entrada.toString() : '',
+      forma_pagamento_entrada: plano.forma_pagamento_entrada || '',
+      forma_pagamento_parcelas: plano.forma_pagamento === 'cartao' ? 'cartao' : 'boleto',
+      numero_parcelas: (plano.numero_parcelas || 1).toString(),
+      observacoes: plano.observacoes || ''
+    });
+    fetchOrcamentosPaciente(plano.paciente_id);
+    setIsDialogOpen(true);
+  };
+
+  const handleExcluirPlano = async (planoId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este plano de pagamento?')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('pagamentos')
+        .delete()
+        .eq('id', planoId);
+
+      if (error) throw error;
+
+      toast.success('Plano de pagamento excluído com sucesso!');
+      fetchPlanosPagamento();
+    } catch (error) {
+      console.error('Erro ao excluir plano de pagamento:', error);
+      toast.error('Erro ao excluir plano de pagamento');
     }
   };
 
@@ -593,11 +630,19 @@ const Financeiro = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                // Implementar edição
-                              }}
+                              onClick={() => handleEditarPlano(plano)}
                             >
+                              <Edit className="w-4 h-4 mr-1" />
                               Editar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleExcluirPlano(plano.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Excluir
                             </Button>
                           </div>
                         </TableCell>
