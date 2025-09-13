@@ -300,15 +300,21 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="nova-data">Data *</Label>
-                  <Input
-                    id="nova-data"
-                    type="datetime-local"
-                    value={novoProcedimento.data}
-                    onChange={(e) => setNovoProcedimento(prev => ({ ...prev, data: e.target.value }))}
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="nova-data">Data *</Label>
+                    <Input
+                      id="nova-data"
+                      type="datetime-local"
+                      value={novoProcedimento.data}
+                      onChange={(e) => {
+                        // Handle datetime-local input correctly for timezone
+                        const localDate = new Date(e.target.value);
+                        const offset = localDate.getTimezoneOffset();
+                        const utcDate = new Date(localDate.getTime() + (offset * 60 * 1000));
+                        setNovoProcedimento(prev => ({ ...prev, data: utcDate.toISOString() }));
+                      }}
+                    />
+                  </div>
                 <div>
                   <Label htmlFor="novo-procedimento">Procedimento *</Label>
                   <select

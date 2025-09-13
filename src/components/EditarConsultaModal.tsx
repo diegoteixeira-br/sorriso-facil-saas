@@ -117,15 +117,21 @@ export function EditarConsultaModal({
   const formatDateTimeForInput = (dateString: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    // Format as YYYY-MM-DDTHH:MM for datetime-local input
-    return date.toISOString().slice(0, 16);
+    // Adjust for timezone offset to show local time
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return localDate.toISOString().slice(0, 16);
   };
 
   const handleDateTimeChange = (value: string) => {
     if (!agendamento) return;
+    // Create date from local datetime-local input without timezone conversion
+    const localDate = new Date(value);
+    const offset = localDate.getTimezoneOffset();
+    const utcDate = new Date(localDate.getTime() + (offset * 60 * 1000));
     setAgendamento({
       ...agendamento,
-      data_agendamento: new Date(value).toISOString(),
+      data_agendamento: utcDate.toISOString(),
     });
   };
 
