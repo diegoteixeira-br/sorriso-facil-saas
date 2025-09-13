@@ -156,7 +156,7 @@ export default function Pacientes() {
         telefone: patient.telefone || "",
         email: patient.email || "",
         data_nascimento: patient.data_nascimento || "",
-        ultima_consulta: "",
+        ultima_consulta: patient.created_at, // Usar data de cadastro quando não há consultas
         status: "ativo" as const,
       })) || [];
 
