@@ -54,8 +54,8 @@ const CalendarioClinico = () => {
         .from('agendamentos')
         .select(`
           *,
-          pacientes(nome),
-          dentistas(nome)
+          pacientes!inner(nome),
+          dentistas!inner(nome)
         `)
         .eq('user_id', user.id)
         .gte('data_agendamento', startDate.toISOString())
@@ -251,7 +251,7 @@ const CalendarioClinico = () => {
                           {formatTime(agendamento.data_agendamento)}
                         </div>
                         <div className="truncate">
-                          {agendamento.paciente?.nome || 'Sem paciente'}
+                          {agendamento.paciente?.nome || 'Paciente não definido'}
                         </div>
                       </div>
                     ))}

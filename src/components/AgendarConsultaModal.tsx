@@ -116,6 +116,15 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
       return;
     }
 
+    if (!formData.dentista_id) {
+      toast({
+        title: "Erro",
+        description: "Dentista é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -129,11 +138,54 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
       const [hora, minuto] = formData.horario.split(':');
       dataHorario.setHours(parseInt(hora), parseInt(minuto), 0, 0);
 
+      // Calcular horário de fim
+      const dataFim = new Date(dataHorario);
+      dataFim.setMinutes(dataFim.getMinutes() + formData.duracao_minutos);
+
+      // Verificar conflitos de horário
+      const { data: conflitos, error: errorConflitos } = await supabase
+        .from("agendamentos")
+        .select("id, data_agendamento, duracao_minutos, paciente_id, dentista_id")
+        .eq("user_id", user.user.id)
+        .gte("data_agendamento", dataHorario.toISOString())
+        .lt("data_agendamento", dataFim.toISOString())
+        .neq("status", "cancelado");
+
+      if (errorConflitos) throw errorConflitos;
+
+      // Verificar conflitos com mesmo paciente ou dentista
+      const conflitosEncontrados = conflitos?.filter(agendamento => {
+        const inicioExistente = new Date(agendamento.data_agendamento);
+        const fimExistente = new Date(inicioExistente);
+        fimExistente.setMinutes(fimExistente.getMinutes() + agendamento.duracao_minutos);
+
+        const temSobreposicao = (
+          (dataHorario >= inicioExistente && dataHorario < fimExistente) ||
+          (dataFim > inicioExistente && dataFim <= fimExistente) ||
+          (dataHorario <= inicioExistente && dataFim >= fimExistente)
+        );
+
+        return temSobreposicao && (
+          agendamento.paciente_id === formData.paciente_id ||
+          agendamento.dentista_id === formData.dentista_id
+        );
+      });
+
+      if (conflitosEncontrados && conflitosEncontrados.length > 0) {
+        toast({
+          title: "Conflito de Horário",
+          description: "Já existe um agendamento para este paciente ou dentista neste horário",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await supabase
         .from("agendamentos")
         .insert([{
           paciente_id: formData.paciente_id,
-          dentista_id: formData.dentista_id || null,
+          dentista_id: formData.dentista_id,
           procedimento: formData.procedimento || null,
           data_agendamento: dataHorario.toISOString(),
           duracao_minutos: formData.duracao_minutos,
@@ -216,7 +268,7 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="dentista">Dentista</Label>
+              <Label htmlFor="dentista">Dentista *</Label>
               <Select value={formData.dentista_id} onValueChange={(value) => handleInputChange("dentista_id", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um dentista" />
