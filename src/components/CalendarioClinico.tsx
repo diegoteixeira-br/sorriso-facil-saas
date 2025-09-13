@@ -20,10 +20,10 @@ interface Agendamento {
   status: string;
   observacoes?: string;
   procedimento?: string;
-  paciente?: {
+  pacientes?: {
     nome: string;
   };
-  dentista?: {
+  dentistas?: {
     nome: string;
   };
 }
@@ -269,7 +269,7 @@ const CalendarioClinico = () => {
                           {formatTime(agendamento.data_agendamento)}
                         </div>
                         <div className="truncate">
-                          {agendamento.paciente?.nome || 'Paciente não definido'}
+                          {agendamento.pacientes?.nome || 'Paciente não definido'}
                         </div>
                       </div>
                     ))}
@@ -360,13 +360,13 @@ const CalendarioClinico = () => {
 
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-muted-foreground" />
-                        <span>{agendamento.paciente?.nome || 'Paciente não definido'}</span>
+                        <span>{agendamento.pacientes?.nome || 'Paciente não definido'}</span>
                       </div>
 
-                      {agendamento.dentista && (
+                      {agendamento.dentistas && (
                         <div className="flex items-center gap-2">
                           <Stethoscope className="w-4 h-4 text-muted-foreground" />
-                          <span>{agendamento.dentista.nome}</span>
+                          <span>{agendamento.dentistas.nome}</span>
                         </div>
                       )}
 
