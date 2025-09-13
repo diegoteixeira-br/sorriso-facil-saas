@@ -11,6 +11,7 @@ interface ToothState {
       mesial: boolean;
       distal: boolean;
       oclusal: boolean;
+      incisal: boolean;
     };
   };
 }
@@ -57,6 +58,7 @@ const handleToothClick = (toothNumber: number) => {
       mesial: false,
       distal: false,
       oclusal: false,
+      incisal: false,
     };
     const selectedFaces = Object.entries(faces)
       .filter(([_, v]) => v)
@@ -70,7 +72,7 @@ const handleToothClick = (toothNumber: number) => {
     
     const currentState = toothStates[selectedTooth] || {
       selected: false,
-      faces: { vestibular: false, lingual: false, mesial: false, distal: false, oclusal: false }
+      faces: { vestibular: false, lingual: false, mesial: false, distal: false, oclusal: false, incisal: false }
     };
 
     const newFaces = {
@@ -274,8 +276,8 @@ const handleToothClick = (toothNumber: number) => {
           <h3 className="text-lg font-semibold mb-4">
             Selecione as Faces - Dente {selectedTooth}
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {['vestibular', 'lingual', 'mesial', 'distal', 'oclusal'].map((face) => {
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+            {['vestibular', 'lingual', 'mesial', 'distal', 'oclusal', 'incisal'].map((face) => {
               const currentState = toothStates[selectedTooth];
               const isSelected = currentState?.faces?.[face as keyof typeof currentState.faces] || false;
               return (
