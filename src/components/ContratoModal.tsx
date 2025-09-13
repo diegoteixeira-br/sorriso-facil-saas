@@ -306,36 +306,36 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
           </div>
         </div>
 
-        <div class="section">
-          <div class="section-title">SERVIÇOS A SEREM PRESTADOS:</div>
-          ${data.orcamento.itens.length > 0 ? `
-            <table class="services-table">
-              <thead>
-                <tr>
-                  <th>Procedimento</th>
-                  <th>Dente</th>
-                  <th>Qtd</th>
-                  <th>Valor Unit.</th>
-                  <th>Valor Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${data.orcamento.itens.map(item => `
+          <div class="section">
+            <div class="section-title">SERVIÇOS A SEREM PRESTADOS:</div>
+            ${data.orcamento.itens.length > 0 ? `
+              <table class="services-table">
+                <thead>
                   <tr>
-                    <td>${item.procedimento}</td>
-                    <td>${item.dente || '-'}</td>
-                    <td>${item.quantidade}</td>
-                    <td>R$ ${item.valor_unitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                    <td>R$ ${item.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    <th>Procedimento</th>
+                    <th>Dente</th>
+                    <th>Qtd</th>
+                    <th>Valor Unit.</th>
+                    <th>Valor Total</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          ` : ''}
-          <div class="total">
-            <strong>VALOR TOTAL DOS SERVIÇOS: R$ ${data.orcamento.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+                </thead>
+                <tbody>
+                  ${data.orcamento.itens.map(item => `
+                    <tr>
+                      <td>${item.procedimento}</td>
+                      <td>${item.dente || '-'}</td>
+                      <td>${item.quantidade}</td>
+                      <td>R$ ${item.valor_unitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                      <td>R$ ${item.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : ''}
+            <div class="total">
+              <strong>VALOR TOTAL DOS SERVIÇOS: R$ ${data.orcamento.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+            </div>
           </div>
-        </div>
 
         ${data.plano ? `
           <div class="section">
@@ -419,6 +419,37 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
               ${data.clinica.cnpj ? `<strong>CNPJ:</strong> ${data.clinica.cnpj}<br>` : ''}
               ${data.clinica.telefone ? `<strong>Telefone:</strong> ${data.clinica.telefone}<br>` : ''}
               ${data.clinica.endereco ? `<strong>Endereço:</strong> ${data.clinica.endereco}` : ''}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">SERVIÇOS A SEREM PRESTADOS:</div>
+            ${data.orcamento.itens.length > 0 ? `
+              <table class="services-table">
+                <thead>
+                  <tr>
+                    <th>Procedimento</th>
+                    <th>Dente</th>
+                    <th>Qtd</th>
+                    <th>Valor Unit.</th>
+                    <th>Valor Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.orcamento.itens.map(item => `
+                    <tr>
+                      <td>${item.procedimento}</td>
+                      <td>${item.dente || '-'}</td>
+                      <td>${item.quantidade}</td>
+                      <td>R$ ${item.valor_unitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                      <td>R$ ${item.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : ''}
+            <div class="total">
+              <strong>VALOR TOTAL DOS SERVIÇOS: R$ ${data.orcamento.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
             </div>
           </div>
 
