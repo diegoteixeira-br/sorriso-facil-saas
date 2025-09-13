@@ -139,6 +139,33 @@ const CalendarioClinico = () => {
     return days;
   };
 
+  const generateWorkingHours = () => {
+    const hours = [];
+    for (let hour = 8; hour < 19; hour++) {
+      if (hour < 18) {
+        hours.push(`${hour.toString().padStart(2, '0')}:00`);
+        hours.push(`${hour.toString().padStart(2, '0')}:30`);
+      } else {
+        hours.push(`${hour.toString().padStart(2, '0')}:00`);
+        if (hour === 18) hours.push(`${hour.toString().padStart(2, '0')}:30`);
+      }
+    }
+    return hours;
+  };
+
+  const isWorkingDay = (date: Date) => {
+    const dayOfWeek = date.getDay();
+    return dayOfWeek >= 1 && dayOfWeek <= 5; // Segunda a sexta
+  };
+
+  const getAgendamentosForHour = (date: Date, hour: string) => {
+    const dayAgendamentos = getAgendamentosForDay(date);
+    return dayAgendamentos.filter(agendamento => {
+      const agendamentoTime = formatTime(agendamento.data_agendamento);
+      return agendamentoTime === hour;
+    });
+  };
+
   const getAgendamentosForDay = (date: Date) => {
     return agendamentos.filter(agendamento => 
       isSameDay(new Date(agendamento.data_agendamento), date)
@@ -245,39 +272,68 @@ const CalendarioClinico = () => {
               const dayAgendamentos = getAgendamentosForDay(day);
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isCurrentDay = isToday(day);
+              const isWorking = isWorkingDay(day);
 
               return (
                 <div
                   key={day.toString()}
-                  className={`min-h-[120px] p-2 border-r border-b cursor-pointer hover:bg-accent/50 transition-colors
+                  className={`min-h-[160px] p-1 border-r border-b cursor-pointer hover:bg-accent/50 transition-colors
                     ${!isCurrentMonth ? 'bg-muted/20 text-muted-foreground' : ''}
                     ${isCurrentDay ? 'bg-primary/5 border-primary/20' : ''}
                   `}
                   onClick={() => setSelectedDay(day)}
                 >
-                  <div className={`text-sm font-medium mb-1 ${isCurrentDay ? 'text-primary' : ''}`}>
+                  <div className={`text-sm font-medium mb-1 text-center ${isCurrentDay ? 'text-primary' : ''}`}>
                     {format(day, 'd')}
                   </div>
 
-                  <div className="space-y-1 max-h-[90px] overflow-y-auto">
-                    {dayAgendamentos.map((agendamento) => (
-                      <div
-                        key={agendamento.id}
-                        className={`text-xs p-1 rounded border text-center ${getStatusColor(agendamento.status)}`}
-                      >
-                        <div className="font-medium">
-                          {formatTime(agendamento.data_agendamento)}
+                  {isWorking && isCurrentMonth ? (
+                    <div className="space-y-0.5 text-xs">
+                      {generateWorkingHours().map((hour) => {
+                        const hourAgendamentos = getAgendamentosForHour(day, hour);
+                        const hasAgendamento = hourAgendamentos.length > 0;
+                        
+                        return (
+                          <div key={hour} className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground text-[10px] w-8 flex-shrink-0">
+                              {hour}
+                            </span>
+                            <div className="flex-1 ml-1">
+                              {hasAgendamento ? (
+                                <div className={`text-[9px] p-0.5 rounded text-center ${getStatusColor(hourAgendamentos[0].status)}`}>
+                                  <div className="truncate leading-tight">
+                                    {hourAgendamentos[0].pacientes?.nome || 'Paciente'}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="h-3 border-b border-dotted border-muted-foreground/20"></div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {dayAgendamentos.slice(0, 3).map((agendamento) => (
+                        <div
+                          key={agendamento.id}
+                          className={`text-xs p-1 rounded border text-center ${getStatusColor(agendamento.status)}`}
+                        >
+                          <div className="font-medium text-[10px]">
+                            {formatTime(agendamento.data_agendamento)}
+                          </div>
+                          <div className="truncate text-[9px]">
+                            {agendamento.pacientes?.nome || 'Paciente'}
+                          </div>
                         </div>
-                        <div className="truncate">
-                          {agendamento.pacientes?.nome || 'Paciente não definido'}
+                      ))}
+                      
+                      {dayAgendamentos.length > 3 && (
+                        <div className="text-[10px] text-muted-foreground text-center">
+                          +{dayAgendamentos.length - 3} mais
                         </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {dayAgendamentos.length > 2 && (
-                    <div className="text-xs text-muted-foreground text-center mt-1">
-                      +{dayAgendamentos.length - 2} mais
+                      )}
                     </div>
                   )}
                 </div>
