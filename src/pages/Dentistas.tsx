@@ -68,7 +68,8 @@ const Dentistas = () => {
 
     const email = formData.email?.trim() || '';
     const telefone = formData.telefone?.trim() || '';
-    const especialidade = formData.especialidade?.trim() || '';
+    const selectedEspecialidade = formData.especialidade === 'sem-especialidade' ? '' : formData.especialidade;
+    const especialidade = selectedEspecialidade?.trim() || '';
 
     const dentistData = {
       nome: formData.nome.trim(),
@@ -220,7 +221,7 @@ const Dentistas = () => {
                     <SelectValue placeholder="Selecione uma especialidade" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sem especialidade</SelectItem>
+                    <SelectItem value="sem-especialidade">Sem especialidade</SelectItem>
                     <SelectItem value="Ortodontia (correção de dentes)">Ortodontia (correção de dentes)</SelectItem>
                     <SelectItem value="Dentística (restaurações e estética)">Dentística (restaurações e estética)</SelectItem>
                     <SelectItem value="Endodontia (tratamento de canal)">Endodontia (tratamento de canal)</SelectItem>
