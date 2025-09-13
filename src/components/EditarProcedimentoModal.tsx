@@ -36,6 +36,7 @@ interface Procedimento {
   procedimento: string;
   observacoes: string;
   status: string;
+  dentista_nome?: string;
 }
 
 interface NovoProcedimento {
@@ -43,15 +44,18 @@ interface NovoProcedimento {
   procedimento: string;
   observacoes: string;
   status: string;
+  dentista_id: string;
 }
 
 export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: EditarProcedimentoModalProps) {
   const [procedimentos, setProcedimentos] = useState<Procedimento[]>([]);
+  const [dentistas, setDentistas] = useState<any[]>([]);
   const [novoProcedimento, setNovoProcedimento] = useState<NovoProcedimento>({
     data: "",
     procedimento: "",
     observacoes: "",
-    status: "realizado"
+    status: "realizado",
+    dentista_id: ""
   });
   const [editandoProcedimento, setEditandoProcedimento] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +67,7 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
     if (open && pacienteId) {
       loadProcedimentos();
       loadPacienteNome();
+      loadDentistas();
     }
   }, [open, pacienteId]);
 
@@ -83,6 +88,20 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
     }
   };
 
+  const loadDentistas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("dentistas")
+        .select("*")
+        .order("nome");
+
+      if (error) throw error;
+      setDentistas(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar dentistas:", error);
+    }
+  };
+
   const loadProcedimentos = async () => {
     if (!pacienteId) return;
     
@@ -90,7 +109,10 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
     try {
       const { data, error } = await supabase
         .from("agendamentos")
-        .select("*")
+        .select(`
+          *,
+          dentistas(nome)
+        `)
         .eq("paciente_id", pacienteId)
         .order("data_agendamento", { ascending: false });
 
@@ -101,7 +123,8 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
         data: item.data_agendamento,
         procedimento: item.procedimento || "Consulta",
         observacoes: item.observacoes || "",
-        status: item.status
+        status: item.status,
+        dentista_nome: item.dentistas?.nome || "Não informado"
       })) || [];
 
       setProcedimentos(transformedProcedimentos);
@@ -118,7 +141,7 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
   };
 
   const handleSalvarNovoProcedimento = async () => {
-    if (!pacienteId || !novoProcedimento.data || !novoProcedimento.procedimento) {
+    if (!pacienteId || !novoProcedimento.data || !novoProcedimento.procedimento || !novoProcedimento.dentista_id) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios",
@@ -136,7 +159,8 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
           data_agendamento: novoProcedimento.data,
           procedimento: novoProcedimento.procedimento,
           observacoes: novoProcedimento.observacoes,
-          status: novoProcedimento.status
+          status: novoProcedimento.status,
+          dentista_id: novoProcedimento.dentista_id
         });
 
       if (error) throw error;
@@ -150,7 +174,8 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
         data: "",
         procedimento: "",
         observacoes: "",
-        status: "realizado"
+        status: "realizado",
+        dentista_id: ""
       });
 
       loadProcedimentos();
@@ -257,7 +282,7 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="nova-data">Data *</Label>
                   <Input
@@ -275,6 +300,22 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
                     value={novoProcedimento.procedimento}
                     onChange={(e) => setNovoProcedimento(prev => ({ ...prev, procedimento: e.target.value }))}
                   />
+                </div>
+                <div>
+                  <Label htmlFor="novo-dentista">Dentista *</Label>
+                  <select
+                    id="novo-dentista"
+                    className="w-full p-2 border rounded-md"
+                    value={novoProcedimento.dentista_id}
+                    onChange={(e) => setNovoProcedimento(prev => ({ ...prev, dentista_id: e.target.value }))}
+                  >
+                    <option value="">Selecione um dentista</option>
+                    {dentistas.map((dentista) => (
+                      <option key={dentista.id} value={dentista.id}>
+                        {dentista.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               
@@ -305,7 +346,7 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
 
               <Button 
                 onClick={handleSalvarNovoProcedimento}
-                disabled={isSaving || !novoProcedimento.data || !novoProcedimento.procedimento}
+                disabled={isSaving || !novoProcedimento.data || !novoProcedimento.procedimento || !novoProcedimento.dentista_id}
                 className="w-full"
               >
                 <Save className="w-4 h-4 mr-2" />
@@ -454,6 +495,9 @@ function ProcedimentoItem({
               hour: '2-digit', 
               minute: '2-digit' 
             })}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Dentista: {procedimento.dentista_nome}
           </p>
           {procedimento.observacoes && (
             <p className="text-sm text-muted-foreground mt-1">{procedimento.observacoes}</p>
