@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import * as AlertDialogUI from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Plus, Calendar, Clock, User, Stethoscope, Trash2 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, startOfWeek, endOfWeek } from "date-fns";
@@ -51,17 +51,17 @@ const CalendarioClinico = () => {
       const startDate = startOfMonth(currentDate);
       const endDate = endOfMonth(currentDate);
 
-      let query = supabase
-        .from('agendamentos')
-        .select(`
-          *,
-          pacientes!inner(nome),
-          dentistas!inner(nome)
-        `)
-        .eq('user_id', user.id)
-        .gte('data_agendamento', startDate.toISOString())
-        .lte('data_agendamento', endDate.toISOString())
-        .order('data_agendamento');
+  let query = supabase
+    .from('agendamentos')
+    .select(`
+      *,
+      pacientes(nome),
+      dentistas(nome)
+    `)
+    .eq('user_id', user.id)
+    .gte('data_agendamento', startDate.toISOString())
+    .lte('data_agendamento', endDate.toISOString())
+    .order('data_agendamento');
 
       if (selectedDentista !== "todos") {
         query = query.eq('dentista_id', selectedDentista);
@@ -331,30 +331,30 @@ const CalendarioClinico = () => {
                           <Badge className={getStatusColor(agendamento.status)}>
                             {agendamento.status}
                           </Badge>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
+                          <AlertDialogUI.AlertDialog>
+                            <AlertDialogUI.AlertDialogTrigger asChild>
                               <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                                <AlertDialogDescription>
+                            </AlertDialogUI.AlertDialogTrigger>
+                            <AlertDialogUI.AlertDialogContent>
+                              <AlertDialogUI.AlertDialogHeader>
+                                <AlertDialogUI.AlertDialogTitle>Confirmar Exclusão</AlertDialogUI.AlertDialogTitle>
+                                <AlertDialogUI.AlertDialogDescription>
                                   Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
+                                </AlertDialogUI.AlertDialogDescription>
+                              </AlertDialogUI.AlertDialogHeader>
+                              <AlertDialogUI.AlertDialogFooter>
+                                <AlertDialogUI.AlertDialogCancel>Cancelar</AlertDialogUI.AlertDialogCancel>
+                                <AlertDialogUI.AlertDialogAction
                                   onClick={() => handleDeleteAgendamento(agendamento.id)}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
                                   Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                </AlertDialogUI.AlertDialogAction>
+                              </AlertDialogUI.AlertDialogFooter>
+                            </AlertDialogUI.AlertDialogContent>
+                          </AlertDialogUI.AlertDialog>
                         </div>
                       </div>
 
