@@ -145,7 +145,7 @@ const AgendaPorDentista = () => {
   return (
     <div className="space-y-6">
       {/* Filtros */}
-      <div className="flex items-start gap-4 flex-wrap">
+      <div className="flex items-end gap-4 flex-wrap">
         <div className="space-y-2">
           <label className="text-sm font-medium">Dentista</label>
           <Select value={selectedDentista} onValueChange={setSelectedDentista}>
@@ -190,7 +190,7 @@ const AgendaPorDentista = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Ações</label>
+          <label className="text-sm font-medium opacity-0 pointer-events-none">Ação</label>
           <Button 
             onClick={() => setIsAgendamentoModalOpen(true)}
             className="bg-gradient-medical"
