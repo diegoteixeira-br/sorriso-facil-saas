@@ -19,6 +19,14 @@ interface Paciente {
   email?: string;
 }
 
+interface Orcamento {
+  id: string;
+  numero_orcamento: string;
+  valor_total: number;
+  status: string;
+  created_at: string;
+}
+
 interface PlanosPagamento {
   id: string;
   paciente_id: string;
@@ -43,6 +51,7 @@ const Financeiro = () => {
   const { user } = useAuth();
   const [planosPagamento, setPlanosPagamento] = useState<PlanosPagamento[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlano, setEditingPlano] = useState<PlanosPagamento | null>(null);
@@ -52,6 +61,7 @@ const Financeiro = () => {
   // Form state
   const [formData, setFormData] = useState({
     paciente_id: '',
+    orcamento_id: '',
     valor_total: '',
     valor_entrada: '',
     forma_pagamento_entrada: '',
@@ -79,6 +89,28 @@ const Financeiro = () => {
       return;
     }
     setPacientes(data || []);
+  };
+
+  const fetchOrcamentosPaciente = async (pacienteId: string) => {
+    if (!pacienteId) {
+      setOrcamentos([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('orcamentos')
+      .select('id, numero_orcamento, valor_total, status, created_at')
+      .eq('user_id', user?.id)
+      .eq('paciente_id', pacienteId)
+      .in('status', ['pendente', 'aprovado'])
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Erro ao carregar orçamentos:', error);
+      setOrcamentos([]);
+      return;
+    }
+    setOrcamentos(data || []);
   };
 
   const fetchPlanosPagamento = async () => {
@@ -176,7 +208,7 @@ const Financeiro = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.paciente_id || !formData.valor_total || !formData.forma_pagamento_parcelas) {
+    if (!formData.paciente_id || !formData.orcamento_id || !formData.valor_total || !formData.forma_pagamento_parcelas) {
       toast.error('Preencha todos os campos obrigatórios');
       return;
     }
@@ -230,6 +262,7 @@ const Financeiro = () => {
   const resetForm = () => {
     setFormData({
       paciente_id: '',
+      orcamento_id: '',
       valor_total: '',
       valor_entrada: '',
       forma_pagamento_entrada: '',
@@ -237,6 +270,7 @@ const Financeiro = () => {
       numero_parcelas: '1',
       observacoes: ''
     });
+    setOrcamentos([]);
   };
 
   const handleGerarBoletos = async (planoId: string) => {
@@ -305,38 +339,64 @@ const Financeiro = () => {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="paciente_id">Paciente *</Label>
-                    <Select 
-                      value={formData.paciente_id} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, paciente_id: value }))}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o paciente" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {pacientes.map(paciente => (
-                          <SelectItem key={paciente.id} value={paciente.id}>
-                            {paciente.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="paciente_id">Paciente *</Label>
+                     <Select 
+                       value={formData.paciente_id} 
+                       onValueChange={(value) => {
+                         setFormData(prev => ({ 
+                           ...prev, 
+                           paciente_id: value,
+                           orcamento_id: '',
+                           valor_total: ''
+                         }));
+                         fetchOrcamentosPaciente(value);
+                       }}
+                       required
+                     >
+                       <SelectTrigger>
+                         <SelectValue placeholder="Selecione o paciente" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {pacientes.map(paciente => (
+                           <SelectItem key={paciente.id} value={paciente.id}>
+                             {paciente.nome}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="valor_total">Valor Total do Tratamento *</Label>
-                    <Input 
-                      id="valor_total" 
-                      type="number" 
-                      step="0.01" 
-                      placeholder="0,00" 
-                      value={formData.valor_total}
-                      onChange={(e) => setFormData(prev => ({ ...prev, valor_total: e.target.value }))}
-                      required 
-                    />
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="orcamento_id">Orçamento *</Label>
+                     <Select 
+                       value={formData.orcamento_id} 
+                       onValueChange={(value) => {
+                         const orcamentoSelecionado = orcamentos.find(o => o.id === value);
+                         setFormData(prev => ({ 
+                           ...prev, 
+                           orcamento_id: value,
+                           valor_total: orcamentoSelecionado ? orcamentoSelecionado.valor_total.toString() : ''
+                         }));
+                       }}
+                       required
+                       disabled={!formData.paciente_id}
+                     >
+                       <SelectTrigger>
+                         <SelectValue placeholder={formData.paciente_id ? "Selecione o orçamento" : "Selecione primeiro o paciente"} />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {orcamentos.map(orcamento => (
+                           <SelectItem key={orcamento.id} value={orcamento.id}>
+                             {orcamento.numero_orcamento} - R$ {orcamento.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                     {formData.paciente_id && orcamentos.length === 0 && (
+                       <p className="text-sm text-muted-foreground">Nenhum orçamento encontrado para este paciente</p>
+                     )}
+                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
