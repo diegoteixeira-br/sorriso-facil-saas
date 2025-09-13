@@ -264,7 +264,11 @@ export function Dashboard() {
                 </div>
               ))}
             </div>
-            <Button variant="outline" className="w-full mt-4">
+            <Button 
+              variant="outline" 
+              className="w-full mt-4"
+              onClick={() => navigate('/agenda')}
+            >
               Ver Agenda Completa
               <ArrowUpRight className="w-4 h-4 ml-2" />
             </Button>
