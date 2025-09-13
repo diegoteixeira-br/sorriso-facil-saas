@@ -49,6 +49,7 @@ interface NovoProcedimento {
 
 export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: EditarProcedimentoModalProps) {
   const [procedimentos, setProcedimentos] = useState<Procedimento[]>([]);
+  const [procedimentosCadastrados, setProcedimentosCadastrados] = useState<any[]>([]);
   const [dentistas, setDentistas] = useState<any[]>([]);
   const [novoProcedimento, setNovoProcedimento] = useState<NovoProcedimento>({
     data: "",
@@ -68,6 +69,7 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
       loadProcedimentos();
       loadPacienteNome();
       loadDentistas();
+      loadProcedimentosCadastrados();
     }
   }, [open, pacienteId]);
 
@@ -99,6 +101,21 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
       setDentistas(data || []);
     } catch (error) {
       console.error("Erro ao carregar dentistas:", error);
+    }
+  };
+
+  const loadProcedimentosCadastrados = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("procedimentos")
+        .select("*")
+        .eq("ativo", true)
+        .order("nome");
+
+      if (error) throw error;
+      setProcedimentosCadastrados(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar procedimentos cadastrados:", error);
     }
   };
 
@@ -294,12 +311,19 @@ export function EditarProcedimentoModal({ open, onOpenChange, pacienteId }: Edit
                 </div>
                 <div>
                   <Label htmlFor="novo-procedimento">Procedimento *</Label>
-                  <Input
+                  <select
                     id="novo-procedimento"
-                    placeholder="Ex: Limpeza, Obturação, Canal..."
+                    className="w-full p-2 border rounded-md"
                     value={novoProcedimento.procedimento}
                     onChange={(e) => setNovoProcedimento(prev => ({ ...prev, procedimento: e.target.value }))}
-                  />
+                  >
+                    <option value="">Selecione um procedimento</option>
+                    {procedimentosCadastrados.map((proc) => (
+                      <option key={proc.id} value={proc.nome}>
+                        {proc.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <Label htmlFor="novo-dentista">Dentista *</Label>
