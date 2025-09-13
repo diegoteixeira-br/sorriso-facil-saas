@@ -254,14 +254,16 @@ export default function Orcamentos() {
     
     // Aplicar juros se for cartão e acima de 1x
     if (planoData.forma_pagamento_parcelas === 'cartao' && numeroParcelas > 1) {
-      const taxaTotal = 1 + (taxaJurosCartao * numeroParcelas / 100);
-      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+      const taxaJurosMensal = taxaJurosCartao / 100;
+      const fatorJuros = Math.pow(1 + taxaJurosMensal, numeroParcelas);
+      valorParcela = valorRestante * (taxaJurosMensal * fatorJuros) / (fatorJuros - 1);
     }
     
     // Aplicar juros se for boleto e acima de 1x
     if (planoData.forma_pagamento_parcelas === 'boleto' && numeroParcelas > 1) {
-      const taxaTotal = 1 + (taxaJurosBoleto * numeroParcelas / 100);
-      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+      const taxaJurosMensal = taxaJurosBoleto / 100;
+      const fatorJuros = Math.pow(1 + taxaJurosMensal, numeroParcelas);
+      valorParcela = valorRestante * (taxaJurosMensal * fatorJuros) / (fatorJuros - 1);
     }
     
     return valorParcela;

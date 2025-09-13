@@ -57,28 +57,11 @@ const Financeiro = () => {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPlano, setEditingPlano] = useState<PlanosPagamento | null>(null);
   const [taxaJurosCartao, setTaxaJurosCartao] = useState<number>(2.5);
   const [taxaJurosBoleto, setTaxaJurosBoleto] = useState<number>(1.5);
   const [contratoModalOpen, setContratoModalOpen] = useState(false);
   const [selectedPlanoId, setSelectedPlanoId] = useState<string | null>(null);
-  const [openPacienteCombobox, setOpenPacienteCombobox] = useState(false);
-  const [searchPaciente, setSearchPaciente] = useState("");
 
-  // Form state
-  const [formData, setFormData] = useState({
-    paciente_id: '',
-    orcamento_id: '',
-    valor_total: '',
-    valor_entrada: '',
-    forma_pagamento_entrada: '',
-    forma_pagamento_parcelas: 'boleto',
-    numero_parcelas: '1',
-    observacoes: ''
-  });
-
-  const formasPagamento = ['Dinheiro', 'Cartão de Crédito', 'Cartão de Débito', 'PIX', 'Transferência Bancária'];
   const statusPlano = [
     { value: 'ativo', label: 'Ativo', color: 'bg-green-100 text-green-800' },
     { value: 'concluido', label: 'Concluído', color: 'bg-blue-100 text-blue-800' },
@@ -97,28 +80,6 @@ const Financeiro = () => {
       return;
     }
     setPacientes(data || []);
-  };
-
-  const fetchOrcamentosPaciente = async (pacienteId: string) => {
-    if (!pacienteId) {
-      setOrcamentos([]);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('orcamentos')
-      .select('id, numero_orcamento, valor_total, status, created_at')
-      .eq('user_id', user?.id)
-      .eq('paciente_id', pacienteId)
-      .in('status', ['pendente', 'aprovado'])
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Erro ao carregar orçamentos:', error);
-      setOrcamentos([]);
-      return;
-    }
-    setOrcamentos(data || []);
   };
 
   const fetchPlanosPagamento = async () => {
@@ -174,111 +135,19 @@ const Financeiro = () => {
     
     // Aplicar juros se for cartão e acima de 1x
     if (plano.forma_pagamento === 'cartao' && numeroParcelas > 1) {
-      const taxaTotal = 1 + (taxaJurosCartao * numeroParcelas / 100);
-      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+      const taxaJurosMensal = taxaJurosCartao / 100;
+      const fatorJuros = Math.pow(1 + taxaJurosMensal, numeroParcelas);
+      valorParcela = valorRestante * (taxaJurosMensal * fatorJuros) / (fatorJuros - 1);
     }
     
     // Aplicar juros se for boleto e acima de 1x
     if (plano.forma_pagamento === 'boleto' && numeroParcelas > 1) {
-      const taxaTotal = 1 + (taxaJurosBoleto * numeroParcelas / 100);
-      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
+      const taxaJurosMensal = taxaJurosBoleto / 100;
+      const fatorJuros = Math.pow(1 + taxaJurosMensal, numeroParcelas);
+      valorParcela = valorRestante * (taxaJurosMensal * fatorJuros) / (fatorJuros - 1);
     }
     
     return valorParcela;
-  };
-
-  const calculateParcela = () => {
-    const valorTotal = parseFloat(formData.valor_total) || 0;
-    const valorEntrada = parseFloat(formData.valor_entrada) || 0;
-    const numeroParcelas = parseInt(formData.numero_parcelas) || 1;
-    
-    const valorRestante = valorTotal - valorEntrada;
-    let valorParcela = valorRestante / numeroParcelas;
-    
-    // Aplicar juros se for cartão e acima de 1x
-    if (formData.forma_pagamento_parcelas === 'cartao' && numeroParcelas > 1) {
-      const taxaTotal = 1 + (taxaJurosCartao * numeroParcelas / 100);
-      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
-    }
-    
-    // Aplicar juros se for boleto e acima de 1x
-    if (formData.forma_pagamento_parcelas === 'boleto' && numeroParcelas > 1) {
-      const taxaTotal = 1 + (taxaJurosBoleto * numeroParcelas / 100);
-      valorParcela = (valorRestante * taxaTotal) / numeroParcelas;
-    }
-    
-    return valorParcela;
-  };
-
-  const getMaxParcelas = () => {
-    return formData.forma_pagamento_parcelas === 'boleto' ? 36 : 12;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.paciente_id || !formData.orcamento_id || !formData.valor_total || !formData.forma_pagamento_parcelas) {
-      toast.error('Preencha todos os campos obrigatórios');
-      return;
-    }
-
-    const valorParcela = calculateParcela();
-    
-    // Primeiro criar o registro principal do plano
-    const planoData = {
-      user_id: user?.id,
-      paciente_id: formData.paciente_id,
-      valor: parseFloat(formData.valor_total),
-      valor_total: parseFloat(formData.valor_total),
-      valor_entrada: formData.valor_entrada ? parseFloat(formData.valor_entrada) : null,
-      forma_pagamento: formData.forma_pagamento_parcelas,
-      forma_pagamento_entrada: formData.forma_pagamento_entrada || null,
-      numero_parcelas: parseInt(formData.numero_parcelas),
-      parcela_numero: 0, // Registro principal
-      plano_pagamento: true,
-      status: 'ativo',
-      observacoes: formData.observacoes
-    };
-
-    try {
-      if (editingPlano) {
-        const { error } = await supabase
-          .from('pagamentos')
-          .update(planoData)
-          .eq('id', editingPlano.id);
-        
-        if (error) throw error;
-        toast.success('Plano de pagamento atualizado com sucesso!');
-      } else {
-        const { error } = await supabase
-          .from('pagamentos')
-          .insert([planoData]);
-        
-        if (error) throw error;
-        toast.success('Plano de pagamento criado com sucesso!');
-      }
-
-      setIsDialogOpen(false);
-      setEditingPlano(null);
-      resetForm();
-      fetchPlanosPagamento();
-    } catch (error) {
-      console.error('Erro ao salvar plano de pagamento:', error);
-      toast.error('Erro ao salvar plano de pagamento');
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      paciente_id: '',
-      orcamento_id: '',
-      valor_total: '',
-      valor_entrada: '',
-      forma_pagamento_entrada: '',
-      forma_pagamento_parcelas: 'boleto',
-      numero_parcelas: '1',
-      observacoes: ''
-    });
-    setOrcamentos([]);
   };
 
   const handleGerarBoletos = async (planoId: string) => {
@@ -289,22 +158,6 @@ const Financeiro = () => {
       console.error('Erro ao gerar boletos:', error);
       toast.error('Erro ao gerar boletos');
     }
-  };
-
-  const handleEditarPlano = (plano: PlanosPagamento) => {
-    setEditingPlano(plano);
-    setFormData({
-      paciente_id: plano.paciente_id,
-      orcamento_id: '', // Reset para carregar orçamentos do paciente
-      valor_total: (plano.valor_total || plano.valor).toString(),
-      valor_entrada: plano.valor_entrada ? plano.valor_entrada.toString() : '',
-      forma_pagamento_entrada: plano.forma_pagamento_entrada || '',
-      forma_pagamento_parcelas: plano.forma_pagamento === 'cartao' ? 'cartao' : 'boleto',
-      numero_parcelas: (plano.numero_parcelas || 1).toString(),
-      observacoes: plano.observacoes || ''
-    });
-    fetchOrcamentosPaciente(plano.paciente_id);
-    setIsDialogOpen(true);
   };
 
   const handleExcluirPlano = async (planoId: string) => {
@@ -356,261 +209,8 @@ const Financeiro = () => {
       <Tabs defaultValue="planos" className="space-y-6">
         <div className="flex items-center justify-between">
           <TabsList>
-            <TabsTrigger value="planos">Planos de Pagamento</TabsTrigger>
+            <TabsTrigger value="planos">Financeiro</TabsTrigger>
           </TabsList>
-
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                className="bg-gradient-medical hover:opacity-90"
-                onClick={() => {
-                  setEditingPlano(null);
-                  resetForm();
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Plano de Pagamento
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingPlano ? 'Editar Plano de Pagamento' : 'Novo Plano de Pagamento'}
-                </DialogTitle>
-                <DialogDescription>
-                  Configure como o paciente irá pagar pelo tratamento
-                </DialogDescription>
-              </DialogHeader>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <Label htmlFor="paciente_id">Paciente *</Label>
-                     <Popover open={openPacienteCombobox} onOpenChange={setOpenPacienteCombobox}>
-                       <PopoverTrigger asChild>
-                         <Button
-                           variant="outline"
-                           role="combobox"
-                           aria-expanded={openPacienteCombobox}
-                           className="w-full justify-between"
-                         >
-                           {formData.paciente_id 
-                             ? pacientes.find(p => p.id === formData.paciente_id)?.nome || "Paciente não encontrado"
-                             : "Buscar paciente..."
-                           }
-                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                         </Button>
-                       </PopoverTrigger>
-                       <PopoverContent className="w-full p-0" align="start">
-                         <Command>
-                           <CommandInput 
-                             placeholder="Digite o nome do paciente..." 
-                             value={searchPaciente}
-                             onValueChange={setSearchPaciente}
-                           />
-                           <CommandList>
-                             <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
-                             <CommandGroup>
-                               {pacientes
-                                 .filter(paciente => 
-                                   paciente.nome.toLowerCase().includes(searchPaciente.toLowerCase())
-                                 )
-                                 .map(paciente => (
-                                   <CommandItem
-                                     key={paciente.id}
-                                     value={paciente.nome}
-                                     onSelect={() => {
-                                       setFormData(prev => ({ 
-                                         ...prev, 
-                                         paciente_id: paciente.id,
-                                         orcamento_id: '',
-                                         valor_total: ''
-                                       }));
-                                       fetchOrcamentosPaciente(paciente.id);
-                                       setOpenPacienteCombobox(false);
-                                       setSearchPaciente("");
-                                     }}
-                                   >
-                                     <Check
-                                       className={cn(
-                                         "mr-2 h-4 w-4",
-                                         formData.paciente_id === paciente.id ? "opacity-100" : "opacity-0"
-                                       )}
-                                     />
-                                     {paciente.nome}
-                                   </CommandItem>
-                                 ))
-                               }
-                             </CommandGroup>
-                           </CommandList>
-                         </Command>
-                       </PopoverContent>
-                     </Popover>
-                   </div>
-
-                   <div className="space-y-2">
-                     <Label htmlFor="orcamento_id">Orçamento *</Label>
-                     <Select 
-                       value={formData.orcamento_id} 
-                       onValueChange={(value) => {
-                         const orcamentoSelecionado = orcamentos.find(o => o.id === value);
-                         setFormData(prev => ({ 
-                           ...prev, 
-                           orcamento_id: value,
-                           valor_total: orcamentoSelecionado ? orcamentoSelecionado.valor_total.toString() : ''
-                         }));
-                       }}
-                       required
-                       disabled={!formData.paciente_id}
-                     >
-                       <SelectTrigger>
-                         <SelectValue placeholder={formData.paciente_id ? "Selecione o orçamento" : "Selecione primeiro o paciente"} />
-                       </SelectTrigger>
-                       <SelectContent>
-                         {orcamentos.map(orcamento => (
-                           <SelectItem key={orcamento.id} value={orcamento.id}>
-                             {orcamento.numero_orcamento} - R$ {orcamento.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                     {formData.paciente_id && orcamentos.length === 0 && (
-                       <p className="text-sm text-muted-foreground">Nenhum orçamento encontrado para este paciente</p>
-                     )}
-                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="valor_entrada">Valor da Entrada (Opcional)</Label>
-                    <Input 
-                      id="valor_entrada" 
-                      type="number" 
-                      step="0.01" 
-                      placeholder="0,00" 
-                      value={formData.valor_entrada}
-                      onChange={(e) => setFormData(prev => ({ ...prev, valor_entrada: e.target.value }))}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="forma_pagamento_entrada">Forma de Pagamento da Entrada</Label>
-                    <Select 
-                      value={formData.forma_pagamento_entrada} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, forma_pagamento_entrada: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a forma" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formasPagamento.map(forma => (
-                          <SelectItem key={forma} value={forma}>
-                            {forma}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="forma_pagamento_parcelas">Forma de Pagamento das Parcelas *</Label>
-                    <Select 
-                      value={formData.forma_pagamento_parcelas} 
-                      onValueChange={(value) => {
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          forma_pagamento_parcelas: value,
-                          // Reset parcelas quando muda forma de pagamento
-                          numero_parcelas: '1'
-                        }));
-                      }}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="boleto">Boleto Bancário</SelectItem>
-                        <SelectItem value="cartao">Cartão de Crédito</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="numero_parcelas">Número de Parcelas *</Label>
-                    <Select 
-                      value={formData.numero_parcelas} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, numero_parcelas: value }))}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: getMaxParcelas() }, (_, i) => i + 1).map(num => (
-                          <SelectItem key={num} value={num.toString()}>
-                            {num}x
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {formData.forma_pagamento_parcelas === 'boleto' 
-                        ? 'Boleto bancário: 1x sem juros, acima com juros' 
-                        : 'Cartão de crédito: 1x sem juros, acima com juros'
-                      }
-                    </p>
-                  </div>
-                </div>
-
-                {formData.valor_total && (
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Resumo do Plano:</h4>
-                    <div className="space-y-1 text-sm">
-                      <p>Valor Total: <span className="font-medium">R$ {parseFloat(formData.valor_total || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
-                      {formData.valor_entrada && (
-                        <p>Entrada: <span className="font-medium">R$ {parseFloat(formData.valor_entrada).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
-                      )}
-                      <p>Parcelas: <span className="font-medium">{formData.numero_parcelas}x de R$ {calculateParcela().toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
-                      {formData.forma_pagamento_parcelas === 'cartao' && parseInt(formData.numero_parcelas) > 1 && (
-                        <div className="text-amber-600 text-xs space-y-1">
-                          <p>⚠️ Parcelas acima de 1x terão juros da operadora ({taxaJurosCartao}% por parcela)</p>
-                          <p>Valor total com juros: <span className="font-medium">R$ {(calculateParcela() * parseInt(formData.numero_parcelas) + parseFloat(formData.valor_entrada || '0')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
-                        </div>
-                      )}
-                      {formData.forma_pagamento_parcelas === 'boleto' && parseInt(formData.numero_parcelas) > 1 && (
-                        <div className="text-amber-600 text-xs space-y-1">
-                          <p>⚠️ Parcelas acima de 1x terão juros ({taxaJurosBoleto}% por parcela)</p>
-                          <p>Valor total com juros: <span className="font-medium">R$ {(calculateParcela() * parseInt(formData.numero_parcelas) + parseFloat(formData.valor_entrada || '0')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="observacoes">Observações</Label>
-                  <Input 
-                    id="observacoes" 
-                    placeholder="Observações sobre o plano de pagamento" 
-                    value={formData.observacoes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="bg-gradient-medical hover:opacity-90">
-                    {editingPlano ? 'Atualizar' : 'Criar'} Plano
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
         </div>
 
         <TabsContent value="planos" className="space-y-6">
@@ -681,14 +281,6 @@ const Financeiro = () => {
                              >
                                <FileCheck className="w-4 h-4 mr-1" />
                                Contrato
-                             </Button>
-                             <Button
-                               variant="outline"
-                               size="sm"
-                               onClick={() => handleEditarPlano(plano)}
-                             >
-                               <Edit className="w-4 h-4 mr-1" />
-                               Editar
                              </Button>
                             <Button
                               variant="outline"
