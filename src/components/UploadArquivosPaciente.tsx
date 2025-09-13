@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, File, X, Eye, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +19,7 @@ interface ArquivoPaciente {
   tamanho_arquivo: number;
   descricao?: string;
   storage_path: string;
+  categoria: string;
   created_at: string;
 }
 
@@ -37,6 +40,7 @@ export const UploadArquivosPaciente: React.FC<UploadArquivosPacienteProps> = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [descricao, setDescricao] = useState('');
+  const [categoria, setCategoria] = useState<string>('raio-x');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number) => {
@@ -79,6 +83,7 @@ export const UploadArquivosPaciente: React.FC<UploadArquivosPacienteProps> = ({
           tipo_arquivo: file.type,
           tamanho_arquivo: file.size,
           storage_path: fileName,
+          categoria: categoria,
           descricao: descricao || null,
           user_id: user.id
         });
@@ -89,6 +94,7 @@ export const UploadArquivosPaciente: React.FC<UploadArquivosPacienteProps> = ({
 
       toast.success('Arquivo enviado com sucesso!');
       setDescricao('');
+      setCategoria('raio-x');
       setDialogOpen(false);
       onArquivoAdicionado();
       
@@ -201,6 +207,19 @@ export const UploadArquivosPaciente: React.FC<UploadArquivosPacienteProps> = ({
               </DialogHeader>
               <div className="space-y-4">
                 <div>
+                  <Label htmlFor="categoria">Categoria</Label>
+                  <Select value={categoria} onValueChange={setCategoria}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="raio-x">Raio-X</SelectItem>
+                      <SelectItem value="exame-sangue">Exame de Sangue</SelectItem>
+                      <SelectItem value="outro">Outros Documentos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label htmlFor="arquivo">Arquivo</Label>
                   <Input
                     id="arquivo"
@@ -220,7 +239,7 @@ export const UploadArquivosPaciente: React.FC<UploadArquivosPacienteProps> = ({
                     id="descricao"
                     value={descricao}
                     onChange={(e) => setDescricao(e.target.value)}
-                    placeholder="Ex: Raio-X panorâmico, Exame de sangue..."
+                    placeholder="Ex: Raio-X panorâmico, Hemograma completo..."
                     disabled={uploading}
                   />
                 </div>
@@ -235,75 +254,103 @@ export const UploadArquivosPaciente: React.FC<UploadArquivosPacienteProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        {arquivos.length === 0 ? (
-          <div className="text-center py-8">
-            <File className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">
-              Nenhum arquivo enviado
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Comece enviando o primeiro arquivo deste paciente
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {arquivos.map((arquivo) => (
-              <div
-                key={arquivo.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                    {isImageFile(arquivo.tipo_arquivo) ? (
-                      <Eye className="w-5 h-5" />
-                    ) : (
-                      <File className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{arquivo.nome_arquivo}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatFileSize(arquivo.tamanho_arquivo)} • {' '}
-                      {new Date(arquivo.created_at).toLocaleDateString('pt-BR')}
-                    </p>
-                    {arquivo.descricao && (
-                      <p className="text-xs text-muted-foreground italic">
-                        {arquivo.descricao}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  {isImageFile(arquivo.tipo_arquivo) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePreview(arquivo)}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownload(arquivo)}
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(arquivo)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <Tabs defaultValue="raio-x" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="raio-x">Raio-X ({arquivos.filter(a => a.categoria === 'raio-x').length})</TabsTrigger>
+            <TabsTrigger value="exame-sangue">Exames de Sangue ({arquivos.filter(a => a.categoria === 'exame-sangue').length})</TabsTrigger>
+            <TabsTrigger value="outro">Outros ({arquivos.filter(a => a.categoria === 'outro').length})</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="raio-x" className="mt-6">
+            {renderArquivosPorCategoria('raio-x', 'Nenhum raio-X enviado', 'Comece enviando o primeiro raio-X deste paciente')}
+          </TabsContent>
+          
+          <TabsContent value="exame-sangue" className="mt-6">
+            {renderArquivosPorCategoria('exame-sangue', 'Nenhum exame de sangue enviado', 'Comece enviando o primeiro exame de sangue deste paciente')}
+          </TabsContent>
+          
+          <TabsContent value="outro" className="mt-6">
+            {renderArquivosPorCategoria('outro', 'Nenhum documento enviado', 'Comece enviando o primeiro documento deste paciente')}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
+
+  function renderArquivosPorCategoria(categoria: string, tituloVazio: string, subtituloVazio: string) {
+    const arquivosFiltrados = arquivos.filter(arquivo => arquivo.categoria === categoria);
+    
+    if (arquivosFiltrados.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <File className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-card-foreground mb-2">
+            {tituloVazio}
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            {subtituloVazio}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {arquivosFiltrados.map((arquivo) => (
+          <div
+            key={arquivo.id}
+            className="flex items-center justify-between p-3 border rounded-lg"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                {isImageFile(arquivo.tipo_arquivo) ? (
+                  <Eye className="w-5 h-5" />
+                ) : (
+                  <File className="w-5 h-5" />
+                )}
+              </div>
+              <div>
+                <p className="font-medium text-sm">{arquivo.nome_arquivo}</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatFileSize(arquivo.tamanho_arquivo)} • {' '}
+                  {new Date(arquivo.created_at).toLocaleDateString('pt-BR')}
+                </p>
+                {arquivo.descricao && (
+                  <p className="text-xs text-muted-foreground italic">
+                    {arquivo.descricao}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {isImageFile(arquivo.tipo_arquivo) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePreview(arquivo)}
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload(arquivo)}
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDelete(arquivo)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 };

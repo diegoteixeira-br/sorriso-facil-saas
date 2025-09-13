@@ -81,6 +81,7 @@ interface ArquivoPaciente {
   tamanho_arquivo: number;
   descricao?: string;
   storage_path: string;
+  categoria: string;
   created_at: string;
 }
 
