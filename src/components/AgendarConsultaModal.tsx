@@ -13,7 +13,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { CalendarIcon, Clock, Check, ChevronsUpDown, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,8 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [dentistas, setDentistas] = useState<Dentista[]>([]);
   const [procedimentos, setProcedimentos] = useState<Procedimento[]>([]);
+  const [openPacienteCombobox, setOpenPacienteCombobox] = useState(false);
+  const [searchPaciente, setSearchPaciente] = useState("");
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -281,6 +284,12 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
     }
   };
 
+  const filteredPacientes = pacientes.filter(paciente =>
+    paciente.nome.toLowerCase().includes(searchPaciente.toLowerCase())
+  );
+
+  const selectedPaciente = pacientes.find(p => p.id === formData.paciente_id);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -292,18 +301,52 @@ export function AgendarConsultaModal({ open, onOpenChange, onSuccess }: AgendarC
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="paciente">Paciente *</Label>
-              <Select value={formData.paciente_id} onValueChange={(value) => handleInputChange("paciente_id", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um paciente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {pacientes.map((paciente) => (
-                    <SelectItem key={paciente.id} value={paciente.id}>
-                      {paciente.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openPacienteCombobox} onOpenChange={setOpenPacienteCombobox}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openPacienteCombobox}
+                    className="w-full justify-between"
+                  >
+                    {selectedPaciente ? selectedPaciente.nome : "Buscar paciente..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder="Digite o nome do paciente..." 
+                      value={searchPaciente}
+                      onValueChange={setSearchPaciente}
+                    />
+                    <CommandList>
+                      <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredPacientes.map((paciente) => (
+                          <CommandItem
+                            key={paciente.id}
+                            value={paciente.nome}
+                            onSelect={() => {
+                              handleInputChange("paciente_id", paciente.id);
+                              setOpenPacienteCombobox(false);
+                              setSearchPaciente("");
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.paciente_id === paciente.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {paciente.nome}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             
             <div className="space-y-2">
