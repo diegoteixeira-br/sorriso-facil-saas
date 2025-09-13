@@ -287,11 +287,13 @@ export default function Orcamentos() {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("Usuário não autenticado");
 
+      const valorParcelaCalculado = calculateParcela();
+      
       const planoDataForSave = {
         user_id: user.user.id,
         paciente_id: selectedPaciente,
         orcamento_id: orcamentoSalvo.id,
-        valor: orcamentoSalvo.valor_total,
+        valor: valorParcelaCalculado, // Valor da parcela calculada com juros
         valor_total: orcamentoSalvo.valor_total,
         valor_entrada: planoData.valor_entrada ? parseFloat(planoData.valor_entrada) : null,
         forma_pagamento: planoData.forma_pagamento_parcelas,

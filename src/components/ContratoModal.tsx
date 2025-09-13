@@ -166,9 +166,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
           valor_entrada: (plano.valor_entrada as number) ?? undefined,
           forma_pagamento_entrada: plano.forma_pagamento_entrada,
           numero_parcelas: Number(plano.numero_parcelas) || 1,
-          valor_parcela: (plano.valor !== null && plano.valor !== undefined)
-            ? Number(plano.valor)
-            : (Number(plano.valor_total || 0) / (Number(plano.numero_parcelas) || 1)),
+          valor_parcela: Number(plano.valor) || 0, // O campo 'valor' agora contém o valor da parcela
           forma_pagamento_parcelas: plano.forma_pagamento,
         };
       }
