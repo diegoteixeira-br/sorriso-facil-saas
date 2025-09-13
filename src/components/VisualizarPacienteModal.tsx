@@ -5,11 +5,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EditarConsultaModal } from "./EditarConsultaModal";
 import { 
   Calendar, 
   Phone, 
@@ -18,7 +30,9 @@ import {
   User, 
   FileText,
   Clock,
-  DollarSign
+  DollarSign,
+  Edit,
+  Trash2
 } from "lucide-react";
 
 interface VisualizarPacienteModalProps {
@@ -64,6 +78,10 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [editarConsultaModalOpen, setEditarConsultaModalOpen] = useState(false);
+  const [consultaParaEditar, setConsultaParaEditar] = useState<string | null>(null);
+  const [excluirConsultaModalOpen, setExcluirConsultaModalOpen] = useState(false);
+  const [consultaParaExcluir, setConsultaParaExcluir] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -133,11 +151,52 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
     return age;
   };
 
+  const handleEditarConsulta = (agendamentoId: string) => {
+    setConsultaParaEditar(agendamentoId);
+    setEditarConsultaModalOpen(true);
+  };
+
+  const handleExcluirConsulta = (agendamentoId: string) => {
+    setConsultaParaExcluir(agendamentoId);
+    setExcluirConsultaModalOpen(true);
+  };
+
+  const confirmarExclusaoConsulta = async () => {
+    if (!consultaParaExcluir) return;
+
+    try {
+      const { error } = await supabase
+        .from("agendamentos")
+        .delete()
+        .eq("id", consultaParaExcluir);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Consulta excluída com sucesso",
+      });
+
+      // Recarregar dados
+      loadPacienteData();
+      setExcluirConsultaModalOpen(false);
+      setConsultaParaExcluir(null);
+    } catch (error) {
+      console.error("Erro ao excluir consulta:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir consulta",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants = {
       agendado: "bg-blue-100 text-blue-800",
       realizado: "bg-green-100 text-green-800",
       cancelado: "bg-red-100 text-red-800",
+      falta: "bg-orange-100 text-orange-800",
       pendente: "bg-yellow-100 text-yellow-800",
       pago: "bg-green-100 text-green-800"
     };
@@ -277,9 +336,9 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                   <div className="space-y-3">
                     {agendamentos.map((agendamento) => (
                       <div key={agendamento.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-1">
                           <Clock className="w-4 h-4 text-muted-foreground" />
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium">{agendamento.procedimento || "Consulta"}</p>
                             <p className="text-sm text-muted-foreground">
                               {new Date(agendamento.data_agendamento).toLocaleDateString('pt-BR')} às{' '}
@@ -293,7 +352,27 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                             )}
                           </div>
                         </div>
-                        {getStatusBadge(agendamento.status)}
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(agendamento.status)}
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditarConsulta(agendamento.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleExcluirConsulta(agendamento.id)}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -342,6 +421,39 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
             </Card>
           </div>
         ) : null}
+
+        <EditarConsultaModal
+          open={editarConsultaModalOpen}
+          onOpenChange={setEditarConsultaModalOpen}
+          agendamentoId={consultaParaEditar}
+          onSuccess={() => {
+            loadPacienteData();
+            setEditarConsultaModalOpen(false);
+            setConsultaParaEditar(null);
+          }}
+        />
+
+        <AlertDialog open={excluirConsultaModalOpen} onOpenChange={setExcluirConsultaModalOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir esta consulta? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setExcluirConsultaModalOpen(false);
+                setConsultaParaExcluir(null);
+              }}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={confirmarExclusaoConsulta}>
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
