@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit, Trash2, Stethoscope } from "lucide-react";
@@ -214,11 +215,23 @@ const Dentistas = () => {
               </div>
               <div>
                 <Label htmlFor="especialidade">Especialidade</Label>
-                <Input
-                  id="especialidade"
-                  value={formData.especialidade}
-                  onChange={(e) => setFormData({ ...formData, especialidade: e.target.value })}
-                />
+                <Select value={formData.especialidade} onValueChange={(value) => setFormData({ ...formData, especialidade: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma especialidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sem especialidade</SelectItem>
+                    <SelectItem value="Ortodontia (correção de dentes)">Ortodontia (correção de dentes)</SelectItem>
+                    <SelectItem value="Dentística (restaurações e estética)">Dentística (restaurações e estética)</SelectItem>
+                    <SelectItem value="Endodontia (tratamento de canal)">Endodontia (tratamento de canal)</SelectItem>
+                    <SelectItem value="Periodontia (doenças da gengiva)">Periodontia (doenças da gengiva)</SelectItem>
+                    <SelectItem value="Prótese Dentária (substituição de dentes)">Prótese Dentária (substituição de dentes)</SelectItem>
+                    <SelectItem value="Implantodontia (implantes)">Implantodontia (implantes)</SelectItem>
+                    <SelectItem value="Odontopediatria (crianças)">Odontopediatria (crianças)</SelectItem>
+                    <SelectItem value="Odontogeriatria (idosos)">Odontogeriatria (idosos)</SelectItem>
+                    <SelectItem value="Cirurgia e Traumatologia Buco-Maxilo-Facial (tratamento de lesões e deformidades faciais)">Cirurgia e Traumatologia Buco-Maxilo-Facial (tratamento de lesões e deformidades faciais)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>
