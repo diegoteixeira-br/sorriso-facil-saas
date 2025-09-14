@@ -169,7 +169,7 @@ export function AppSidebar() {
             {clinicData.logo ? (
               <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" />
             ) : (
-              <Heart className="w-5 h-5 text-white" />
+              <img src="/logo.png" alt="System Dental" className="w-full h-full object-contain" />
             )}
           </div>
           <div>
