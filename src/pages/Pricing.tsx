@@ -126,9 +126,7 @@ const Pricing = () => {
           <p className="text-muted-foreground mb-4">
             Todos os planos incluem 15 dias grátis. Cancele a qualquer momento.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Dúvidas? Entre em contato conosco pelo email: suporte@sorrisofacil.com.br
-          </p>
+          <p className="text-sm text-muted-foreground">Dúvidas? Entre em contato conosco pelo email: suporte@systemdental.com.br</p>
         </div>
       </div>
     </div>;
