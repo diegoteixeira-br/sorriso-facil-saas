@@ -103,7 +103,7 @@ const BloqueiosFerias = () => {
     try {
       const bloqueioData = {
         tipo: formData.tipo,
-        dentista_id: formData.dentista_id || null,
+        dentista_id: formData.dentista_id === 'all' ? null : formData.dentista_id,
         data_inicio: formData.data_inicio,
         data_fim: formData.data_fim,
         motivo: formData.motivo || null,
@@ -154,7 +154,7 @@ const BloqueiosFerias = () => {
     setEditingBloqueio(bloqueio);
     setFormData({
       tipo: bloqueio.tipo,
-      dentista_id: bloqueio.dentista_id || '',
+      dentista_id: bloqueio.dentista_id || 'all',
       data_inicio: bloqueio.data_inicio,
       data_fim: bloqueio.data_fim,
       motivo: bloqueio.motivo || ''
@@ -189,7 +189,7 @@ const BloqueiosFerias = () => {
   const resetForm = () => {
     setFormData({
       tipo: '',
-      dentista_id: '',
+      dentista_id: 'all',
       data_inicio: '',
       data_fim: '',
       motivo: ''
@@ -404,7 +404,7 @@ const BloqueiosFerias = () => {
                     <SelectValue placeholder="Selecione o dentista (opcional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os dentistas</SelectItem>
+                    <SelectItem value="all">Todos os dentistas</SelectItem>
                     {dentistas.map((dentista) => (
                       <SelectItem key={dentista.id} value={dentista.id}>
                         {dentista.nome}
