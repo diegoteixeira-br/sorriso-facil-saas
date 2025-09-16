@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Zap, Building } from 'lucide-react';
+import { Check, Crown, Zap, Building, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 const Pricing = () => {
   const [loading, setLoading] = useState<string | null>(null);
+  const navigate = useNavigate();
   const {
     user,
     session
@@ -76,6 +78,17 @@ const Pricing = () => {
   }];
   return <div className="min-h-screen py-12 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </Button>
+        </div>
+        
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-card-foreground mb-4">
             Escolha o plano ideal para sua clínica
