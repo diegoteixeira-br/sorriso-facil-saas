@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,12 +55,22 @@ function StatCard({ title, value, change, icon: Icon, trend = "neutral" }: StatC
 }
 
 export function Dashboard() {
-  const { subscribed, subscriptionTier, subscriptionEnd, checkSubscription } = useAuth();
+  const { subscribed, subscriptionTier, subscriptionEnd, checkSubscription, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgendamentoModalOpen, setIsAgendamentoModalOpen] = useState(false);
   const [isPagamentoModalOpen, setIsPagamentoModalOpen] = useState(false);
+  
+  // Estados para dados reais
+  const [stats, setStats] = useState({
+    pacientesAtivos: 0,
+    consultasHoje: 0,
+    receitaMensal: 0,
+    taxaPresenca: 0
+  });
+  const [proximasConsultas, setProximasConsultas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
@@ -68,6 +78,94 @@ export function Dashboard() {
     month: 'long',
     day: 'numeric'
   });
+
+  // Buscar dados reais do banco
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    if (!user) return;
+    
+    try {
+      // Buscar número de pacientes ativos
+      const { data: pacientes } = await supabase
+        .from('pacientes')
+        .select('id')
+        .eq('user_id', user.id);
+
+      // Buscar consultas de hoje
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      
+      const { data: consultasHoje } = await supabase
+        .from('agendamentos')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('data_agendamento', `${todayStr}T00:00:00`)
+        .lt('data_agendamento', `${todayStr}T23:59:59`);
+
+      // Buscar receita mensal
+      const currentMonth = today.getMonth() + 1;
+      const currentYear = today.getFullYear();
+      
+      const { data: pagamentosRecebidos } = await supabase
+        .from('pagamentos')
+        .select('valor')
+        .eq('user_id', user.id)
+        .eq('status', 'pago')
+        .gte('data_pagamento', `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`)
+        .lt('data_pagamento', `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-01`);
+
+      // Calcular taxa de presença
+      const { data: consultasRealizadas } = await supabase
+        .from('agendamentos')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'realizado');
+
+      const { data: consultasTotal } = await supabase
+        .from('agendamentos')
+        .select('id')
+        .eq('user_id', user.id)
+        .neq('status', 'cancelado');
+
+      // Buscar próximas consultas
+      const { data: proximasConsultasData } = await supabase
+        .from('agendamentos')
+        .select(`
+          id,
+          data_agendamento,
+          status,
+          procedimento,
+          pacientes (nome)
+        `)
+        .eq('user_id', user.id)
+        .gte('data_agendamento', new Date().toISOString())
+        .order('data_agendamento', { ascending: true })
+        .limit(4);
+
+      const receita = pagamentosRecebidos?.reduce((total, pag) => total + Number(pag.valor), 0) || 0;
+      const taxaPresenca = consultasTotal?.length 
+        ? Math.round((consultasRealizadas?.length || 0) / consultasTotal.length * 100)
+        : 0;
+
+      setStats({
+        pacientesAtivos: pacientes?.length || 0,
+        consultasHoje: consultasHoje?.length || 0,
+        receitaMensal: receita,
+        taxaPresenca
+      });
+
+      setProximasConsultas(proximasConsultasData || []);
+    } catch (error) {
+      console.error('Erro ao buscar dados do dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleManageSubscription = async () => {
     try {
@@ -198,31 +296,31 @@ export function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Pacientes Ativos"
-          value="1,234"
-          change="+12% este mês"
+          value={loading ? "..." : stats.pacientesAtivos.toString()}
+          change={`${stats.pacientesAtivos} cadastrados`}
           icon={Users}
-          trend="up"
+          trend="neutral"
         />
         <StatCard
           title="Consultas Hoje"
-          value="8"
-          change="6 concluídas"
+          value={loading ? "..." : stats.consultasHoje.toString()}
+          change={`${stats.consultasHoje} agendadas`}
           icon={Calendar}
           trend="neutral"
         />
         <StatCard
           title="Receita Mensal"
-          value="R$ 24.500"
-          change="+8% vs mês anterior"
+          value={loading ? "..." : `R$ ${stats.receitaMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          change="Pagamentos recebidos"
           icon={DollarSign}
           trend="up"
         />
         <StatCard
           title="Taxa de Presença"
-          value="92%"
-          change="+2% vs semana passada"
+          value={loading ? "..." : `${stats.taxaPresenca}%`}
+          change="Consultas realizadas"
           icon={CheckCircle}
-          trend="up"
+          trend={stats.taxaPresenca >= 80 ? "up" : "neutral"}
         />
       </div>
 
@@ -238,31 +336,46 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { time: "09:00", patient: "Maria Silva", procedure: "Limpeza", status: "Confirmado" },
-                { time: "10:30", patient: "João Santos", procedure: "Tratamento de Canal", status: "Pendente" },
-                { time: "14:00", patient: "Ana Costa", procedure: "Restauração", status: "Confirmado" },
-                { time: "15:30", patient: "Pedro Lima", procedure: "Consulta", status: "Confirmado" },
-              ].map((appointment, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="text-sm font-medium bg-primary text-primary-foreground px-2 py-1 rounded">
-                      {appointment.time}
-                    </div>
-                    <div>
-                      <p className="font-medium text-card-foreground">{appointment.patient}</p>
-                      <p className="text-sm text-muted-foreground">{appointment.procedure}</p>
-                    </div>
-                  </div>
-                  <div className={`text-xs px-2 py-1 rounded-full ${
-                    appointment.status === "Confirmado" 
-                      ? "bg-success/10 text-success" 
-                      : "bg-primary/10 text-primary"
-                  }`}>
-                    {appointment.status}
-                  </div>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+              ) : proximasConsultas.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhuma consulta agendada para hoje
                 </div>
-              ))}
+              ) : (
+                proximasConsultas.map((appointment) => {
+                  const dataAgendamento = new Date(appointment.data_agendamento);
+                  const time = dataAgendamento.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  });
+                  
+                  return (
+                    <div key={appointment.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm font-medium bg-primary text-primary-foreground px-2 py-1 rounded">
+                          {time}
+                        </div>
+                        <div>
+                          <p className="font-medium text-card-foreground">
+                            {appointment.pacientes?.nome || 'Paciente não informado'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {appointment.procedimento || 'Consulta'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={`text-xs px-2 py-1 rounded-full ${
+                        appointment.status === "confirmado" 
+                          ? "bg-success/10 text-success" 
+                          : "bg-primary/10 text-primary"
+                      }`}>
+                        {appointment.status === "confirmado" ? "Confirmado" : "Agendado"}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
             <Button 
               variant="outline" 

@@ -12,6 +12,8 @@ import Procedimentos from "./pages/Procedimentos";
 import Orcamentos from "./pages/Orcamentos";
 import Financeiro from "./pages/Financeiro";
 import Relatorios from "./pages/Relatorios";
+import Funcionarios from "./pages/Funcionarios";
+import Despesas from "./pages/Despesas";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
@@ -104,6 +106,20 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Configuracoes />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/funcionarios" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Funcionarios />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/despesas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Despesas />
                 </Layout>
               </ProtectedRoute>
             } />

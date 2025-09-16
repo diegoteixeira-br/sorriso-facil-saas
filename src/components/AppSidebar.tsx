@@ -8,7 +8,8 @@ import {
   Settings,
   Heart,
   Stethoscope,
-  ClipboardList
+  ClipboardList,
+  TrendingDown
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +47,12 @@ const menuItems = [
     group: "principal"
   },
   {
+    title: "Funcionários",
+    url: "/funcionarios",
+    icon: Users,
+    group: "principal"
+  },
+  {
     title: "Agenda",
     url: "/agenda",
     icon: Calendar,
@@ -73,6 +80,12 @@ const menuItems = [
     title: "Relatórios",
     url: "/relatorios",
     icon: BarChart3,
+    group: "gestao"
+  },
+  {
+    title: "Despesas",
+    url: "/despesas",
+    icon: TrendingDown,
     group: "gestao"
   },
   {

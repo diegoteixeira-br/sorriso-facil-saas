@@ -173,6 +173,7 @@ export type Database = {
       }
       dentistas: {
         Row: {
+          cargo: string | null
           created_at: string
           cro: string
           email: string | null
@@ -184,6 +185,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cargo?: string | null
           created_at?: string
           cro: string
           email?: string | null
@@ -195,12 +197,88 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cargo?: string | null
           created_at?: string
           cro?: string
           email?: string | null
           especialidade?: string | null
           id?: string
           nome?: string
+          telefone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      despesas: {
+        Row: {
+          categoria: string
+          created_at: string
+          data: string
+          descricao: string
+          funcionario_id: string | null
+          id: string
+          updated_at: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data: string
+          descricao: string
+          funcionario_id?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data?: string
+          descricao?: string
+          funcionario_id?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      funcionarios: {
+        Row: {
+          cargo: string
+          created_at: string
+          data_admissao: string | null
+          email: string | null
+          id: string
+          nome: string
+          salario: number | null
+          telefone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cargo: string
+          created_at?: string
+          data_admissao?: string | null
+          email?: string | null
+          id?: string
+          nome: string
+          salario?: number | null
+          telefone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cargo?: string
+          created_at?: string
+          data_admissao?: string | null
+          email?: string | null
+          id?: string
+          nome?: string
+          salario?: number | null
           telefone?: string | null
           updated_at?: string
           user_id?: string
@@ -348,6 +426,7 @@ export type Database = {
       }
       paciente_arquivos: {
         Row: {
+          categoria: string
           created_at: string
           descricao: string | null
           id: string
@@ -360,6 +439,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          categoria?: string
           created_at?: string
           descricao?: string | null
           id?: string
@@ -372,6 +452,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          categoria?: string
           created_at?: string
           descricao?: string | null
           id?: string
