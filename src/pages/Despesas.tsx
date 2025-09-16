@@ -141,7 +141,7 @@ const Despesas = () => {
         valor: parseFloat(formData.valor),
         data: formData.data,
         categoria: formData.categoria,
-        funcionario_id: formData.funcionario_id || null,
+        funcionario_id: formData.funcionario_id === 'none' || formData.funcionario_id === '' ? null : formData.funcionario_id,
         user_id: user?.id
       };
 
@@ -192,7 +192,7 @@ const Despesas = () => {
       valor: despesa.valor.toString(),
       data: despesa.data,
       categoria: despesa.categoria,
-      funcionario_id: despesa.funcionario_id || ''
+      funcionario_id: despesa.funcionario_id || 'none'
     });
     setIsModalOpen(true);
   };
@@ -360,7 +360,7 @@ const Despesas = () => {
                       <SelectValue placeholder="Selecione o funcionário (opcional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="none">Nenhum</SelectItem>
                       {funcionarios.map((funcionario) => (
                         <SelectItem key={funcionario.id} value={funcionario.id}>
                           {funcionario.nome}
