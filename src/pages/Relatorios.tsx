@@ -17,35 +17,199 @@ import {
 
 export default function Relatorios() {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [financialData, setFinancialData] = useState({
     totalPendente: 0,
     totalPago: 0,
     totalGeral: 0
   });
 
+  const [dashboardStats, setDashboardStats] = useState({
+    receitaTotal: 0,
+    consultasRealizadas: 0,
+    novosPacientes: 0,
+    ticketMedio: 0,
+    faturamentoSemanal: 0,
+    metaSemanal: 8000,
+    taxaRetorno: 0
+  });
+
+  const [procedimentosMaisRealizados, setProcedimentosMaisRealizados] = useState<any[]>([]);
+  const [faturamentoPorPeriodo, setFaturamentoPorPeriodo] = useState<any[]>([]);
+  const [procedimentosPorDentista, setProcedimentosPorDentista] = useState<any[]>([]);
+
   useEffect(() => {
-    const fetchFinancialData = async () => {
-      if (!user) return;
-      
+    if (user) {
+      fetchAllReportsData();
+    }
+  }, [user]);
+
+  const fetchAllReportsData = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+
+      // Buscar dados financeiros básicos
       const { data: pagamentos } = await supabase
         .from('pagamentos')
-        .select('valor, status')
+        .select('valor, status, data_pagamento, created_at')
         .eq('user_id', user.id);
 
       if (pagamentos) {
-        const totalPendente = pagamentos.filter(p => p.status === 'pendente').reduce((sum, p) => sum + p.valor, 0);
-        const totalPago = pagamentos.filter(p => p.status === 'pago').reduce((sum, p) => sum + p.valor, 0);
+        const totalPendente = pagamentos.filter(p => p.status === 'pendente').reduce((sum, p) => sum + Number(p.valor), 0);
+        const totalPago = pagamentos.filter(p => p.status === 'pago').reduce((sum, p) => sum + Number(p.valor), 0);
         
         setFinancialData({
           totalPendente,
           totalPago,
           totalGeral: totalPendente + totalPago
         });
-      }
-    };
 
-    fetchFinancialData();
-  }, [user]);
+        // Calcular faturamento semanal (últimos 7 dias)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const faturamentoSemanal = pagamentos
+          .filter(p => p.status === 'pago' && new Date(p.data_pagamento || p.created_at) >= sevenDaysAgo)
+          .reduce((sum, p) => sum + Number(p.valor), 0);
+
+        // Calcular ticket médio
+        const pagamentosValidos = pagamentos.filter(p => p.status === 'pago');
+        const ticketMedio = pagamentosValidos.length > 0 ? totalPago / pagamentosValidos.length : 0;
+
+        setDashboardStats(prev => ({
+          ...prev,
+          receitaTotal: totalPago,
+          ticketMedio,
+          faturamentoSemanal
+        }));
+      }
+
+      // Buscar dados de consultas e pacientes
+      const { data: agendamentos } = await supabase
+        .from('agendamentos')
+        .select('id, status, procedimento, created_at, data_agendamento, dentista_id, paciente_id')
+        .eq('user_id', user.id);
+
+      const { data: pacientes } = await supabase
+        .from('pacientes')
+        .select('id, created_at')
+        .eq('user_id', user.id);
+
+      const { data: dentistas } = await supabase
+        .from('dentistas')
+        .select('id, nome')
+        .eq('user_id', user.id);
+
+      if (agendamentos && pacientes) {
+        const consultasRealizadas = agendamentos.filter(a => a.status === 'realizado').length;
+        
+        // Novos pacientes no mês atual
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        const novosPacientes = pacientes.filter(p => {
+          const created = new Date(p.created_at);
+          return created.getMonth() === currentMonth && created.getFullYear() === currentYear;
+        }).length;
+
+        // Calcular taxa de retorno (pacientes com mais de 1 consulta)
+        const pacientesComConsultas = new Map();
+        agendamentos.forEach(a => {
+          const count = pacientesComConsultas.get(a.paciente_id) || 0;
+          pacientesComConsultas.set(a.paciente_id, count + 1);
+        });
+        
+        const pacientesQueRetornaram = Array.from(pacientesComConsultas.values()).filter(count => count > 1).length;
+        const taxaRetorno = pacientes.length > 0 ? Math.round((pacientesQueRetornaram / pacientes.length) * 100) : 0;
+
+        setDashboardStats(prev => ({
+          ...prev,
+          consultasRealizadas,
+          novosPacientes,
+          taxaRetorno
+        }));
+
+        // Procedimentos mais realizados
+        const procedimentosCount = new Map();
+        agendamentos.filter(a => a.procedimento && a.status === 'realizado').forEach(a => {
+          const proc = a.procedimento;
+          procedimentosCount.set(proc, (procedimentosCount.get(proc) || 0) + 1);
+        });
+
+        const maxCount = Math.max(...Array.from(procedimentosCount.values()), 1);
+        const procedimentosArray = Array.from(procedimentosCount.entries())
+          .map(([name, count]) => ({
+            name,
+            count,
+            percentage: Math.round((count / maxCount) * 100)
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+
+        setProcedimentosMaisRealizados(procedimentosArray);
+
+        // Procedimentos por dentista
+        if (dentistas) {
+          const procedimentosPorDentista = dentistas.map(dentista => {
+            const procedimentosDentista = agendamentos.filter(a => 
+              a.dentista_id === dentista.id && a.status === 'realizado'
+            );
+            
+            const revenue = procedimentosDentista.length * 200; // Estimativa
+            
+            return {
+              name: dentista.nome,
+              procedures: procedimentosDentista.length,
+              revenue: `R$ ${revenue.toLocaleString('pt-BR')}`
+            };
+          }).sort((a, b) => b.procedures - a.procedures);
+
+          setProcedimentosPorDentista(procedimentosPorDentista);
+        }
+      }
+
+      // Faturamento por período (últimos 6 meses)
+      if (pagamentos) {
+        const monthlyData = [];
+        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          const month = date.getMonth();
+          const year = date.getFullYear();
+          
+          const monthlyRevenue = pagamentos
+            .filter(p => {
+              const paymentDate = new Date(p.data_pagamento || p.created_at);
+              return p.status === 'pago' && 
+                     paymentDate.getMonth() === month && 
+                     paymentDate.getFullYear() === year;
+            })
+            .reduce((sum, p) => sum + Number(p.valor), 0);
+
+          const prevMonthRevenue = i === 5 ? monthlyRevenue : monthlyData[monthlyData.length - 1]?.amount || 0;
+          const change = prevMonthRevenue > 0 ? 
+            Math.round(((monthlyRevenue - prevMonthRevenue) / prevMonthRevenue) * 100) : 0;
+
+          monthlyData.push({
+            period: months[month],
+            amount: `R$ ${monthlyRevenue.toLocaleString('pt-BR')}`,
+            change: `${change >= 0 ? '+' : ''}${change}%`
+          });
+        }
+
+        setFaturamentoPorPeriodo(monthlyData.slice(-4)); // Últimos 4 meses
+      }
+
+    } catch (error) {
+      console.error('Erro ao buscar dados dos relatórios:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -130,10 +294,12 @@ export default function Relatorios() {
             <DollarSign className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">R$ 98.450</div>
+            <div className="text-2xl font-bold text-card-foreground">
+              {loading ? "..." : `R$ ${dashboardStats.receitaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+            </div>
             <p className="text-xs text-success flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3" />
-              +15% vs mês anterior
+              Pagamentos confirmados
             </p>
           </CardContent>
         </Card>
@@ -146,10 +312,12 @@ export default function Relatorios() {
             <Calendar className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">287</div>
+            <div className="text-2xl font-bold text-card-foreground">
+              {loading ? "..." : dashboardStats.consultasRealizadas}
+            </div>
             <p className="text-xs text-success flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3" />
-              +8% vs mês anterior
+              Procedimentos concluídos
             </p>
           </CardContent>
         </Card>
@@ -162,10 +330,12 @@ export default function Relatorios() {
             <Users className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">42</div>
+            <div className="text-2xl font-bold text-card-foreground">
+              {loading ? "..." : dashboardStats.novosPacientes}
+            </div>
             <p className="text-xs text-success flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3" />
-              +23% vs mês anterior
+              Neste mês
             </p>
           </CardContent>
         </Card>
@@ -178,10 +348,12 @@ export default function Relatorios() {
             <BarChart3 className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">R$ 343</div>
+            <div className="text-2xl font-bold text-card-foreground">
+              {loading ? "..." : `R$ ${dashboardStats.ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+            </div>
             <p className="text-xs text-success flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3" />
-              +5% vs mês anterior
+              Por consulta paga
             </p>
           </CardContent>
         </Card>
@@ -196,25 +368,28 @@ export default function Relatorios() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { name: "Limpeza", count: 45, percentage: 85 },
-                { name: "Restauração", count: 32, percentage: 60 },
-                { name: "Tratamento de Canal", count: 18, percentage: 35 },
-                { name: "Extração", count: 12, percentage: 25 },
-              ].map((procedure, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-card-foreground">{procedure.name}</span>
-                    <span className="text-muted-foreground">{procedure.count}</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className="bg-gradient-medical h-2 rounded-full transition-all duration-300" 
-                      style={{ width: `${procedure.percentage}%` }}
-                    />
-                  </div>
+              {loading ? (
+                <div className="text-center py-4 text-muted-foreground">Carregando...</div>
+              ) : procedimentosMaisRealizados.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  Nenhum procedimento encontrado
                 </div>
-              ))}
+              ) : (
+                procedimentosMaisRealizados.map((procedure, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-card-foreground">{procedure.name}</span>
+                      <span className="text-muted-foreground">{procedure.count}</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-gradient-medical h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${procedure.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -225,12 +400,21 @@ export default function Relatorios() {
             <CardTitle>Faturamento Semanal</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-card-foreground mb-2">R$ 6.850</div>
-            <p className="text-sm text-muted-foreground mb-4">Meta: R$ 8.000</p>
-            <div className="w-full bg-muted rounded-full h-3">
-              <div className="bg-gradient-success h-3 rounded-full" style={{ width: '85.6%' }} />
+            <div className="text-3xl font-bold text-card-foreground mb-2">
+              {loading ? "..." : `R$ ${dashboardStats.faturamentoSemanal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">85.6% da meta atingida</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Meta: R$ {dashboardStats.metaSemanal.toLocaleString('pt-BR')}
+            </p>
+            <div className="w-full bg-muted rounded-full h-3">
+              <div 
+                className="bg-gradient-success h-3 rounded-full" 
+                style={{ width: `${Math.min((dashboardStats.faturamentoSemanal / dashboardStats.metaSemanal) * 100, 100)}%` }} 
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {loading ? "..." : `${Math.round((dashboardStats.faturamentoSemanal / dashboardStats.metaSemanal) * 100)}% da meta atingida`}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -244,22 +428,25 @@ export default function Relatorios() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { period: "Janeiro", amount: "R$ 15.450", change: "+12%" },
-                { period: "Fevereiro", amount: "R$ 18.200", change: "+18%" },
-                { period: "Março", amount: "R$ 22.300", change: "+22%" },
-                { period: "Abril", amount: "R$ 19.850", change: "-11%" },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-card-foreground">{item.period}</p>
-                    <p className="text-sm text-muted-foreground">{item.amount}</p>
-                  </div>
-                  <Badge variant={item.change.startsWith('+') ? 'default' : 'destructive'}>
-                    {item.change}
-                  </Badge>
+              {loading ? (
+                <div className="text-center py-4 text-muted-foreground">Carregando...</div>
+              ) : faturamentoPorPeriodo.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  Nenhum dado encontrado
                 </div>
-              ))}
+              ) : (
+                faturamentoPorPeriodo.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-card-foreground">{item.period}</p>
+                      <p className="text-sm text-muted-foreground">{item.amount}</p>
+                    </div>
+                    <Badge variant={item.change.startsWith('+') ? 'default' : 'destructive'}>
+                      {item.change}
+                    </Badge>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -271,19 +458,23 @@ export default function Relatorios() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { name: "Dr. João Silva", procedures: 45, revenue: "R$ 12.500" },
-                { name: "Dra. Maria Santos", procedures: 38, revenue: "R$ 9.800" },
-                { name: "Dr. Pedro Costa", procedures: 32, revenue: "R$ 8.200" },
-              ].map((dentist, index) => (
-                <div key={index} className="p-3 bg-muted/50 rounded-lg">
-                  <p className="font-medium text-card-foreground">{dentist.name}</p>
-                  <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                    <span>{dentist.procedures} procedimentos</span>
-                    <span>{dentist.revenue}</span>
-                  </div>
+              {loading ? (
+                <div className="text-center py-4 text-muted-foreground">Carregando...</div>
+              ) : procedimentosPorDentista.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  Nenhum dentista encontrado
                 </div>
-              ))}
+              ) : (
+                procedimentosPorDentista.map((dentist, index) => (
+                  <div key={index} className="p-3 bg-muted/50 rounded-lg">
+                    <p className="font-medium text-card-foreground">{dentist.name}</p>
+                    <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                      <span>{dentist.procedures} procedimentos</span>
+                      <span>{dentist.revenue}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -295,10 +486,15 @@ export default function Relatorios() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">78%</div>
+              <div className="text-4xl font-bold text-primary mb-2">
+                {loading ? "..." : `${dashboardStats.taxaRetorno}%`}
+              </div>
               <p className="text-sm text-muted-foreground mb-4">dos pacientes retornaram</p>
               <div className="w-full bg-muted rounded-full h-3">
-                <div className="bg-gradient-medical h-3 rounded-full" style={{ width: '78%' }} />
+                <div 
+                  className="bg-gradient-medical h-3 rounded-full" 
+                  style={{ width: `${dashboardStats.taxaRetorno}%` }} 
+                />
               </div>
               <p className="text-xs text-muted-foreground mt-2">Meta: 80%</p>
             </div>
