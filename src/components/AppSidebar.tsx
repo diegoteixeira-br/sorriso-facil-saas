@@ -175,9 +175,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-border w-64" collapsible="none">
-      <SidebarContent className="bg-card">
+      <SidebarContent className="bg-primary">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 bg-primary border-b border-primary-foreground/20">
+        <div className="flex items-center gap-3 p-4 border-b border-primary-foreground/20">
           <div className="w-8 h-8 bg-primary-foreground rounded-lg flex items-center justify-center overflow-hidden">
             {clinicData.logo ? (
               <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" />
@@ -204,8 +204,8 @@ export function AppSidebar() {
                       className={({ isActive }) => `
                         flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200
                         ${isActive 
-                          ? "bg-primary text-primary-foreground font-medium shadow-md" 
-                          : "text-gray-700 hover:bg-primary hover:text-primary-foreground font-medium"
+                          ? "bg-primary-foreground text-primary font-medium shadow-md" 
+                          : "text-primary-foreground hover:bg-primary-foreground/10 font-medium"
                         }
                       `}
                     >
