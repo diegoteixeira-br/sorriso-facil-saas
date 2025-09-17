@@ -88,6 +88,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
               quantidade,
               preco_unitario,
               dente,
+              observacoes,
               procedimento:procedimentos(nome)
             )
           `)
@@ -98,31 +99,60 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
       }
 
       if (planoId) {
-        // Buscar plano de pagamento
+        // Buscar plano de pagamento e tentar encontrar o orçamento relacionado
         const { data: planoData } = await supabase
-          .from('pagamentos')
+          .from('planos_pagamento')
           .select(`
-            valor_total,
-            valor_entrada,
-            forma_pagamento_entrada,
-            numero_parcelas,
-            valor,
-            forma_pagamento,
+            *,
             paciente:pacientes(nome, cpf, telefone, endereco)
           `)
           .eq('id', planoId)
           .single();
 
-        plano = planoData;
-
-        // Se não temos orçamento, buscar pelos dados do plano
-        if (!orcamento && plano) {
-          orcamento = {
-            numero_orcamento: `PLANO-${planoId.slice(-8)}`,
-            valor_total: plano.valor_total || plano.valor,
-            paciente: plano.paciente,
-            itens: []
+        if (planoData) {
+          plano = {
+            valor_entrada: planoData.valor_entrada,
+            forma_pagamento_entrada: planoData.forma_pagamento_entrada,
+            numero_parcelas: planoData.numero_parcelas,
+            valor_parcela: planoData.valor_parcela,
+            forma_pagamento_parcelas: planoData.forma_pagamento_parcelas
           };
+
+          // Buscar orçamentos relacionados ao mesmo paciente para obter os itens
+          const { data: orcamentoPaciente } = await supabase
+            .from('orcamentos')
+            .select(`
+              numero_orcamento,
+              valor_total,
+              itens:orcamento_itens(
+                quantidade,
+                preco_unitario,
+                dente,
+                observacoes,
+                procedimento:procedimentos(nome)
+              )
+            `)
+            .eq('paciente_id', planoData.paciente_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (orcamentoPaciente) {
+            orcamento = {
+              numero_orcamento: orcamentoPaciente.numero_orcamento,
+              valor_total: planoData.valor_total,
+              paciente: planoData.paciente,
+              itens: orcamentoPaciente.itens || []
+            };
+          } else {
+            // Se não encontrar orçamento, criar um básico
+            orcamento = {
+              numero_orcamento: `PLANO-${planoId.slice(-8)}`,
+              valor_total: planoData.valor_total,
+              paciente: planoData.paciente,
+              itens: []
+            };
+          }
         }
       }
 
