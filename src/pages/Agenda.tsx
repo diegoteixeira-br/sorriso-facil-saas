@@ -99,7 +99,9 @@ const Agenda = () => {
   };
 
   const getDaysWithAgendamentos = () => {
-    const dates = agendamentos.map(agendamento => new Date(agendamento.data_agendamento));
+    const dates = agendamentos
+      .filter(agendamento => agendamento.status !== 'concluido')
+      .map(agendamento => new Date(agendamento.data_agendamento));
     return dates;
   };
 
