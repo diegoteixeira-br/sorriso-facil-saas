@@ -782,11 +782,6 @@ export type Database = {
           asaas_environment: string | null
           asaas_webhook_token: string | null
           created_at: string
-          google_access_token: string | null
-          google_calendar_enabled: boolean | null
-          google_client_id: string | null
-          google_client_secret: string | null
-          google_refresh_token: string | null
           id: string
           taxa_juros_boleto: number | null
           taxa_juros_cartao: number | null
@@ -798,11 +793,6 @@ export type Database = {
           asaas_environment?: string | null
           asaas_webhook_token?: string | null
           created_at?: string
-          google_access_token?: string | null
-          google_calendar_enabled?: boolean | null
-          google_client_id?: string | null
-          google_client_secret?: string | null
-          google_refresh_token?: string | null
           id?: string
           taxa_juros_boleto?: number | null
           taxa_juros_cartao?: number | null
@@ -814,11 +804,6 @@ export type Database = {
           asaas_environment?: string | null
           asaas_webhook_token?: string | null
           created_at?: string
-          google_access_token?: string | null
-          google_calendar_enabled?: boolean | null
-          google_client_id?: string | null
-          google_client_secret?: string | null
-          google_refresh_token?: string | null
           id?: string
           taxa_juros_boleto?: number | null
           taxa_juros_cartao?: number | null
