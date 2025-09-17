@@ -37,13 +37,6 @@ export function Layout({ children }: LayoutProps) {
             </div>
             
             <div className="flex items-center gap-3">
-              {subscribed && subscriptionTier && (
-                <Badge variant="secondary" className="bg-medical-100 text-medical-700">
-                  {subscriptionTier === 'basic' && 'Básico'}
-                  {subscriptionTier === 'premium' && 'Premium'}
-                  {subscriptionTier === 'enterprise' && 'Enterprise'}
-                </Badge>
-              )}
               
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-4 h-4" />

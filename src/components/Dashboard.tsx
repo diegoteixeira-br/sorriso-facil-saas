@@ -213,9 +213,6 @@ export function Dashboard() {
           <p className="text-muted-foreground capitalize">{today}</p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge className={subscriptionStatus.color}>
-            {subscriptionStatus.text}
-          </Badge>
           <Button onClick={() => setIsModalOpen(true)} className="bg-gradient-medical shadow-medical">
             <Plus className="w-4 h-4 mr-2" />
             Novo Paciente
@@ -227,70 +224,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Subscription Alert */}
-      {!subscribed && (
-        <Card className="border-l-4 border-l-primary bg-primary/5">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Crown className="w-6 h-6 text-primary" />
-                <div>
-                  <h3 className="font-semibold text-card-foreground">
-                    {subscriptionStatus.status === 'trial' ? 'Aproveite seu período de trial!' : 'Assinatura necessária'}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {subscriptionStatus.status === 'trial' 
-                      ? `Seu trial expira em ${subscriptionEnd ? new Date(subscriptionEnd).toLocaleDateString('pt-BR') : 'breve'}`
-                      : 'Assine um plano para continuar usando o sistema'
-                    }
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={checkSubscription}
-                >
-                  Atualizar Status
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={() => navigate('/pricing')}
-                  className="bg-medical-600 hover:bg-medical-700"
-                >
-                  Ver Planos
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* Subscription Management */}
-      {subscribed && (
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CreditCard className="w-6 h-6 text-medical-600" />
-                <div>
-                  <h3 className="font-semibold">Gerenciar Assinatura</h3>
-                  <p className="text-muted-foreground">
-                    Altere seu plano, método de pagamento ou cancele sua assinatura
-                  </p>
-                </div>
-              </div>
-              <Button 
-                variant="outline"
-                onClick={handleManageSubscription}
-              >
-                Gerenciar
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

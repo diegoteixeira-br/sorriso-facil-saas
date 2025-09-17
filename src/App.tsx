@@ -15,7 +15,7 @@ import Relatorios from "./pages/Relatorios";
 import Funcionarios from "./pages/Funcionarios";
 import Despesas from "./pages/Despesas";
 import Auth from "./pages/Auth";
-import Pricing from "./pages/Pricing";
+
 import NotFound from "./pages/NotFound";
 import { Layout } from "./components/Layout";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -45,7 +45,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route path="/pricing" element={<Pricing />} />
+            
             <Route path="/" element={
               <ProtectedRoute>
                 <Layout>

@@ -36,18 +36,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   const checkSubscription = async () => {
-    if (!session) return;
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      if (error) throw error;
-      
-      setSubscribed(data.subscribed || false);
-      setSubscriptionTier(data.subscription_tier || null);
-      setSubscriptionEnd(data.subscription_end || null);
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-    }
+    // Sistema gratuito - sempre definir como subscribed
+    setSubscribed(true);
+    setSubscriptionTier('premium');
+    setSubscriptionEnd(null);
   };
 
   useEffect(() => {
@@ -58,11 +50,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check subscription after auth state changes
+        // Sistema gratuito - sempre ativo
         if (session?.user) {
-          setTimeout(() => {
-            checkSubscription();
-          }, 0);
+          setSubscribed(true);
+          setSubscriptionTier('premium');
+          setSubscriptionEnd(null);
         } else {
           setSubscribed(false);
           setSubscriptionTier(null);
@@ -77,10 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
+      // Sistema gratuito - sempre ativo
       if (session?.user) {
-        setTimeout(() => {
-          checkSubscription();
-        }, 0);
+        setSubscribed(true);
+        setSubscriptionTier('premium');
+        setSubscriptionEnd(null);
       }
     });
 
