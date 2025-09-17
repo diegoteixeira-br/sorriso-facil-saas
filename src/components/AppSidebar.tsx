@@ -178,13 +178,6 @@ export function AppSidebar() {
       <SidebarContent className="bg-card">
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-border">
-          <div className="w-8 h-8 bg-gradient-medical rounded-lg flex items-center justify-center overflow-hidden">
-            {clinicData.logo ? (
-              <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" />
-            ) : (
-              <img src="/logo.png" alt="System Dental" className="w-full h-full object-contain" />
-            )}
-          </div>
           <div>
             <h2 className="font-bold text-lg text-card-foreground">{clinicData.name}</h2>
             <p className="text-xs text-muted-foreground">Sistema Odontológico</p>
