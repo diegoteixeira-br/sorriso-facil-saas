@@ -86,7 +86,7 @@ const Auth = () => {
                     <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
                   </div>
                   <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? 'Criando conta...' : 'Criar Conta (15 dias grátis)'}
+                    {loading ? 'Criando conta...' : 'Criar Conta Grátis'}
                   </Button>
                 </form>
               </TabsContent>
