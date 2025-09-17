@@ -34,15 +34,15 @@ function StatCard({ title, value, change, icon: Icon, trend = "neutral" }: StatC
   const trendColor = trend === "up" ? "text-success" : trend === "down" ? "text-destructive" : "text-muted-foreground";
   
   return (
-    <Card className="animate-fade-in hover:shadow-medical transition-shadow duration-300">
+    <Card className="animate-fade-in hover:shadow-medical transition-all duration-300 hover:bg-primary hover:text-primary-foreground group cursor-pointer">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-sm font-medium text-muted-foreground group-hover:text-primary-foreground/90">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-primary" />
+        <Icon className="h-4 w-4 text-primary group-hover:text-primary-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-card-foreground">{value}</div>
+        <div className="text-2xl font-bold text-card-foreground group-hover:text-primary-foreground">{value}</div>
         {change && (
           <p className={`text-xs ${trendColor} flex items-center gap-1 mt-1`}>
             <TrendingUp className="h-3 w-3" />
