@@ -15,6 +15,7 @@ interface ProfileSettings {
   cnpj?: string;
   endereco?: string;
   logo_url?: string;
+  slogan?: string;
 }
 
 interface AsaasSettings {
@@ -55,7 +56,7 @@ const Configuracoes = () => {
       // Fetch profile settings
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('clinic_name, razao_social, cnpj, endereco, logo_url')
+        .select('clinic_name, razao_social, cnpj, endereco, logo_url, slogan')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -173,7 +174,8 @@ const Configuracoes = () => {
             clinic_name: profileSettings.clinic_name,
             razao_social: profileSettings.razao_social,
             cnpj: profileSettings.cnpj,
-            endereco: profileSettings.endereco
+            endereco: profileSettings.endereco,
+            slogan: profileSettings.slogan
           })
           .eq('user_id', user.id);
         error = updateError;
@@ -186,7 +188,8 @@ const Configuracoes = () => {
             razao_social: profileSettings.razao_social,
             cnpj: profileSettings.cnpj,
             endereco: profileSettings.endereco,
-            logo_url: profileSettings.logo_url || null
+            logo_url: profileSettings.logo_url || null,
+            slogan: profileSettings.slogan
           });
         error = insertError;
         if (!insertError) setProfileExists(true);
@@ -330,6 +333,19 @@ const Configuracoes = () => {
                     onChange={(e) => setProfileSettings(prev => ({
                       ...prev,
                       endereco: e.target.value
+                    }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="slogan">Slogan da Clínica</Label>
+                  <Input
+                    id="slogan"
+                    placeholder="Ex: Seu sorriso é nossa prioridade"
+                    value={profileSettings.slogan || ''}
+                    onChange={(e) => setProfileSettings(prev => ({
+                      ...prev,
+                      slogan: e.target.value
                     }))}
                   />
                 </div>

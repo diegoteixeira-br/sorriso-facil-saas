@@ -78,6 +78,7 @@ export function AppSidebar() {
   const [clinicData, setClinicData] = React.useState<{
     name: string;
     logo?: string;
+    slogan?: string;
   }>({
     name: 'System Dental'
   });
@@ -86,13 +87,14 @@ export function AppSidebar() {
       if (!user) return;
       const { data } = await supabase
         .from('profiles')
-        .select('clinic_name, logo_url')
+        .select('clinic_name, logo_url, slogan')
         .eq('user_id', user.id)
         .maybeSingle();
       if (data) {
         setClinicData({
           name: data.clinic_name || 'System Dental',
-          logo: data.logo_url || undefined
+          logo: data.logo_url || undefined,
+          slogan: data.slogan || 'Seu sorriso é nossa prioridade'
         });
       }
     };
@@ -110,7 +112,8 @@ export function AppSidebar() {
         const newData = payload.new as any;
         setClinicData({
           name: newData.clinic_name || 'System Dental',
-          logo: newData.logo_url || undefined
+          logo: newData.logo_url || undefined,
+          slogan: newData.slogan || 'Seu sorriso é nossa prioridade'
         });
       }
     }).subscribe();
@@ -225,7 +228,7 @@ export function AppSidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-white text-sm truncate">{clinicData.name}</h3>
-              <p className="text-xs text-blue-100 truncate">Seu sorriso é nossa prioridade</p>
+              <p className="text-xs text-blue-100 truncate">{clinicData.slogan || 'Seu sorriso é nossa prioridade'}</p>
             </div>
           </div>
         </div>
