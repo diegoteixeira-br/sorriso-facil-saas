@@ -126,7 +126,7 @@ export function AppSidebar() {
     isActive
   }: {
     isActive: boolean;
-  }) => isActive ? "bg-blue-700 text-white font-medium shadow-md" : "text-slate-700 hover:bg-green-500 hover:text-white font-medium transition-all duration-200";
+  }) => isActive ? "bg-blue-700 text-white font-medium shadow-md" : "text-white/90 hover:bg-blue-600 hover:text-white font-medium transition-all duration-200";
   return <Sidebar className="border-r border-blue-600 w-64 h-screen fixed left-0 top-0 z-40" collapsible="none">
       <SidebarContent className="flex flex-col h-full bg-slate-50">
         {/* Header */}
