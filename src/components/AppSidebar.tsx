@@ -175,10 +175,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-border w-64" collapsible="none">
-      <SidebarContent className="bg-primary">
+      <SidebarContent className="bg-card">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-primary-foreground/20">
-          <div className="w-8 h-8 bg-primary-foreground rounded-lg flex items-center justify-center overflow-hidden">
+        <div className="flex items-center gap-3 p-4 border-b border-border">
+          <div className="w-8 h-8 bg-gradient-medical rounded-lg flex items-center justify-center overflow-hidden">
             {clinicData.logo ? (
               <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" />
             ) : (
@@ -186,27 +186,81 @@ export function AppSidebar() {
             )}
           </div>
           <div>
-            <h2 className="font-bold text-lg text-primary-foreground">{clinicData.name}</h2>
-            <p className="text-xs text-primary-foreground/80">Sistema Odontológico</p>
+            <h2 className="font-bold text-lg text-card-foreground">{clinicData.name}</h2>
+            <p className="text-xs text-muted-foreground">Sistema Odontológico</p>
           </div>
         </div>
 
-        {/* Menu */}
+        {/* Menu Principal */}
         <SidebarGroup>
+          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
+            Principal
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1 p-2">
-              {menuItems.map((item) => (
+            <SidebarMenu className="space-y-1">
+              {groupedItems.principal.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/"} 
                       className={({ isActive }) => `
-                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200
-                        ${isActive 
-                          ? "bg-primary-foreground text-primary font-medium shadow-md" 
-                          : "text-primary-foreground hover:bg-primary-foreground/10 font-medium"
-                        }
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                        ${getNavCls({ isActive })}
+                      `}
+                    >
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      <span className="truncate font-medium">{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Menu Clínico */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
+            Clínico
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {groupedItems.clinico.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className={({ isActive }) => `
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                        ${getNavCls({ isActive })}
+                      `}
+                    >
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      <span className="truncate font-medium">{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Menu Gestão */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
+            Gestão
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {groupedItems.gestao.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className={({ isActive }) => `
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                        ${getNavCls({ isActive })}
                       `}
                     >
                       <item.icon className="w-5 h-5 shrink-0" />
