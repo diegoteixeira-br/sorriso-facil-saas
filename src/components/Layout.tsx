@@ -15,6 +15,8 @@ export function Layout({ children }: LayoutProps) {
 
   const handleSignOut = async () => {
     await signOut();
+    // Redirect to auth page after logout
+    window.location.href = '/auth';
   };
 
   return (

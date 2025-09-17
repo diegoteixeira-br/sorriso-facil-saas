@@ -128,10 +128,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setSubscribed(false);
-    setSubscriptionTier(null);
-    setSubscriptionEnd(null);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          title: "Erro ao sair",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Clear local state
+      setUser(null);
+      setSession(null);
+      setSubscribed(false);
+      setSubscriptionTier(null);
+      setSubscriptionEnd(null);
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Ocorreu um erro inesperado ao fazer logout.",
+        variant: "destructive",
+      });
+    }
   };
 
   const value = {
