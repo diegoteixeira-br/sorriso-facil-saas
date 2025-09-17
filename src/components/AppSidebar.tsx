@@ -170,23 +170,23 @@ export function AppSidebar() {
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
-      ? "bg-primary text-primary-foreground font-medium shadow-md border-l-4 border-primary-foreground" 
-      : "text-card-foreground hover:bg-primary/10 hover:text-primary font-medium transition-all duration-200 hover:shadow-sm";
+      ? "bg-blue-700 text-white font-medium shadow-md" 
+      : "text-white/90 hover:bg-blue-600 hover:text-white font-medium transition-all duration-200";
 
   return (
-    <Sidebar className="border-r border-border w-64" collapsible="none">
-      <SidebarContent className="bg-card">
+    <Sidebar className="border-r border-blue-600 w-64" collapsible="none">
+      <SidebarContent className="bg-blue-500 flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-border">
+        <div className="flex items-center gap-3 p-4 border-b border-blue-600">
           <div>
-            <h2 className="font-bold text-lg text-card-foreground">{clinicData.name}</h2>
-            <p className="text-xs text-muted-foreground">Sistema Odontológico</p>
+            <h2 className="font-bold text-lg text-white">{clinicData.name}</h2>
+            <p className="text-xs text-blue-100">Sistema Odontológico</p>
           </div>
         </div>
 
         {/* Menu Principal */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
+          <SidebarGroupLabel className="text-sm font-bold text-white uppercase tracking-wider mb-2 px-2">
             Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -214,7 +214,7 @@ export function AppSidebar() {
 
         {/* Menu Clínico */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
+          <SidebarGroupLabel className="text-sm font-bold text-white uppercase tracking-wider mb-2 px-2">
             Clínico
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -240,8 +240,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Menu Gestão */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm font-bold text-card-foreground uppercase tracking-wider mb-2 px-2">
+        <SidebarGroup className="flex-1">
+          <SidebarGroupLabel className="text-sm font-bold text-white uppercase tracking-wider mb-2 px-2">
             Gestão
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -265,6 +265,23 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Clinic Info at Bottom */}
+        <div className="mt-auto p-4 border-t border-blue-600">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center overflow-hidden">
+              {clinicData.logo ? (
+                <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" />
+              ) : (
+                <Heart className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-white text-sm truncate">{clinicData.name}</h3>
+              <p className="text-xs text-blue-100 truncate">Seu sorriso é nossa prioridade</p>
+            </div>
+          </div>
+        </div>
       </SidebarContent>
     </Sidebar>
   );
