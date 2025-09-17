@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,13 +13,13 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { signOut, subscriptionTier, subscribed } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
-    // Redirect to auth page after logout
-    window.location.href = '/auth';
+    // Redirect to auth page after logout without full reload
+    navigate('/auth', { replace: true });
   };
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
