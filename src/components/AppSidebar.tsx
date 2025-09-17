@@ -137,7 +137,7 @@ export function AppSidebar() {
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-blue-600 bg-sky-500">
           <div>
-            <h2 className="font-bold text-lg text-white">{clinicData.name}</h2>
+            <h2 className="font-bold text-lg text-white">System Dental</h2>
             <p className="text-xs text-blue-100">Sistema Odontológico</p>
           </div>
         </div>
