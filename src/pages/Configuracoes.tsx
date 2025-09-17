@@ -45,6 +45,7 @@ const Configuracoes = () => {
   const [uploading, setUploading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showWebhookToken, setShowWebhookToken] = useState(false);
+  const [profileExists, setProfileExists] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchProfileSettings = async () => {
@@ -63,6 +64,7 @@ const Configuracoes = () => {
         console.error(profileError);
       } else {
         setProfileSettings(profileData || { clinic_name: '' });
+        setProfileExists(!!profileData);
       }
 
       // Fetch Asaas settings
@@ -163,15 +165,32 @@ const Configuracoes = () => {
     setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          clinic_name: profileSettings.clinic_name,
-          razao_social: profileSettings.razao_social,
-          cnpj: profileSettings.cnpj,
-          endereco: profileSettings.endereco
-        })
-        .eq('user_id', user.id);
+      let error = null as any;
+      if (profileExists) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            clinic_name: profileSettings.clinic_name,
+            razao_social: profileSettings.razao_social,
+            cnpj: profileSettings.cnpj,
+            endereco: profileSettings.endereco
+          })
+          .eq('user_id', user.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ 
+            user_id: user.id,
+            clinic_name: profileSettings.clinic_name,
+            razao_social: profileSettings.razao_social,
+            cnpj: profileSettings.cnpj,
+            endereco: profileSettings.endereco,
+            logo_url: profileSettings.logo_url || null
+          });
+        error = insertError;
+        if (!insertError) setProfileExists(true);
+      }
 
       if (error) throw error;
 

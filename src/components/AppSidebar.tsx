@@ -84,9 +84,11 @@ export function AppSidebar() {
   React.useEffect(() => {
     const fetchClinicData = async () => {
       if (!user) return;
-      const {
-        data
-      } = await supabase.from('profiles').select('clinic_name, logo_url').eq('user_id', user.id).maybeSingle();
+      const { data } = await supabase
+        .from('profiles')
+        .select('clinic_name, logo_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
       if (data) {
         setClinicData({
           name: data.clinic_name || 'System Dental',
