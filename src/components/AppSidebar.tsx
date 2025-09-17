@@ -216,7 +216,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Clinic Info at Bottom */}
-        <div className="mt-auto p-4 border-t border-blue-600">
+        <div className="mt-auto p-4 border-t border-blue-600 bg-sky-500">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center overflow-hidden">
               {clinicData.logo ? <img src={clinicData.logo} alt="Logo da clínica" className="w-full h-full object-contain" /> : <Heart className="w-5 h-5 text-white" />}
