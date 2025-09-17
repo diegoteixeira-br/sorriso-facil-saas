@@ -205,7 +205,7 @@ export function AppSidebar() {
                         flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200
                         ${isActive 
                           ? "bg-primary text-primary-foreground font-medium shadow-md" 
-                          : "text-card-foreground hover:bg-primary hover:text-primary-foreground font-medium"
+                          : "text-gray-700 hover:bg-primary hover:text-primary-foreground font-medium"
                         }
                       `}
                     >
