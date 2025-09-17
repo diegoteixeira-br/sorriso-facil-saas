@@ -24,22 +24,33 @@ export function Layout({ children }: LayoutProps) {
         
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-16 border-b border-border bg-primary px-6 flex items-center justify-between">
+          <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-primary-foreground" />
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary-foreground rounded-lg flex items-center justify-center">
-                  <span className="text-primary font-bold text-sm">SD</span>
-                </div>
-                <div>
-                  <h1 className="text-primary-foreground font-semibold text-lg">System Dental</h1>
-                  <p className="text-primary-foreground/80 text-xs">Sistema Odontológico</p>
-                </div>
+              <SidebarTrigger className="text-muted-foreground" />
+              <div className="relative max-w-md w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Buscar pacientes, agendamentos..." 
+                  className="pl-10 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary"
+                />
               </div>
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-primary-foreground hover:bg-primary-foreground/10">
+              {subscribed && subscriptionTier && (
+                <Badge variant="secondary" className="bg-medical-100 text-medical-700">
+                  {subscriptionTier === 'basic' && 'Básico'}
+                  {subscriptionTier === 'premium' && 'Premium'}
+                  {subscriptionTier === 'enterprise' && 'Enterprise'}
+                </Badge>
+              )}
+              
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-4 h-4" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
+              </Button>
+              
+              <Button variant="ghost" size="icon" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
