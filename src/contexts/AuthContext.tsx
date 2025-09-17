@@ -129,33 +129,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
+        // Mesmo com erro (ex.: session_not_found), seguimos limpando o estado local
+        console.warn('Logout warning:', error.message);
         toast({
-          title: "Erro ao sair",
-          description: error.message,
-          variant: "destructive",
+          title: "Aviso ao sair",
+          description: "Sua sessão já não existia no servidor, mas limpamos o login local.",
         });
-        return;
+      } else {
+        toast({
+          title: "Logout realizado",
+          description: "Você foi desconectado com sucesso.",
+        });
       }
-      
-      // Clear local state
+    } catch (error) {
+      console.error('Logout unexpected error', error);
+      toast({
+        title: "Erro ao sair",
+        description: "Ocorreu um erro inesperado ao fazer logout.",
+        variant: "destructive",
+      });
+    } finally {
+      // Limpeza garantida do estado local
       setUser(null);
       setSession(null);
       setSubscribed(false);
       setSubscriptionTier(null);
       setSubscriptionEnd(null);
       
-      toast({
-        title: "Logout realizado",
-        description: "Você foi desconectado com sucesso.",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao sair",
-        description: "Ocorreu um erro inesperado ao fazer logout.",
-        variant: "destructive",
-      });
+      // Força limpeza de tokens locais do Supabase (fallback defensivo)
+      try {
+        const ref = 'srsaglsokrqnujwcbqkc';
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith(`sb-${ref}-auth-token`))
+          .forEach((k) => localStorage.removeItem(k));
+      } catch {}
     }
   };
 
