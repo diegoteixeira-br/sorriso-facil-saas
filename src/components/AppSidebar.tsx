@@ -135,8 +135,8 @@ export function AppSidebar() {
   return <Sidebar className="border-r border-blue-600 w-64 h-screen fixed left-0 top-0 z-40" collapsible="none">
       <SidebarContent className="flex flex-col h-full bg-slate-50">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-blue-600 bg-sky-500">
-          <div>
+        <div className="flex items-center justify-center p-4 border-b border-blue-600 bg-sky-500">
+          <div className="text-center">
             <h2 className="font-bold text-lg text-white">System Dental</h2>
             <p className="text-xs text-blue-100">Sistema Odontológico</p>
           </div>
