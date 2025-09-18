@@ -53,6 +53,7 @@ interface PacienteDetalhes {
   endereco: string;
   profissao: string;
   estado_civil: string;
+  sexo: string;
   responsavel: string;
   telefone_responsavel: string;
   observacoes: string;
@@ -85,11 +86,32 @@ interface ArquivoPaciente {
   created_at: string;
 }
 
+interface Orcamento {
+  id: string;
+  numero_orcamento: string;
+  valor_total: number;
+  status: string;
+  created_at: string;
+  itens: OrcamentoItem[];
+}
+
+interface OrcamentoItem {
+  id: string;
+  quantidade: number;
+  preco_unitario: number;
+  dente?: number;
+  observacoes?: string;
+  procedimento: {
+    nome: string;
+  };
+}
+
 export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: VisualizarPacienteModalProps) {
   const [paciente, setPaciente] = useState<PacienteDetalhes | null>(null);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [arquivos, setArquivos] = useState<ArquivoPaciente[]>([]);
+  const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editarConsultaModalOpen, setEditarConsultaModalOpen] = useState(false);
   const [consultaParaEditar, setConsultaParaEditar] = useState<string | null>(null);
@@ -148,6 +170,33 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
 
       if (arquivosError) throw arquivosError;
       setArquivos(arquivosData || []);
+
+      // Carregar orçamentos do paciente
+      const { data: orcamentosData, error: orcamentosError } = await supabase
+        .from("orcamentos")
+        .select(`
+          *,
+          orcamento_itens (
+            *,
+            procedimentos (
+              nome
+            )
+          )
+        `)
+        .eq("paciente_id", pacienteId)
+        .order("created_at", { ascending: false });
+
+      if (orcamentosError) throw orcamentosError;
+      
+      const orcamentosFormatados = (orcamentosData || []).map(orc => ({
+        ...orc,
+        itens: orc.orcamento_itens?.map((item: any) => ({
+          ...item,
+          procedimento: item.procedimentos
+        })) || []
+      }));
+      
+      setOrcamentos(orcamentosFormatados);
 
     } catch (error) {
       console.error("Erro ao carregar dados do paciente:", error);
@@ -276,6 +325,10 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                     <p className="text-card-foreground">{paciente.estado_civil || "-"}</p>
                   </div>
                   <div>
+                    <label className="text-sm font-medium text-muted-foreground">Sexo</label>
+                    <p className="text-card-foreground">{paciente.sexo || "-"}</p>
+                  </div>
+                  <div>
                     <label className="text-sm font-medium text-muted-foreground">Profissão</label>
                     <p className="text-card-foreground">{paciente.profissao || "-"}</p>
                   </div>
@@ -397,6 +450,79 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
               </CardContent>
             </Card>
 
+            {/* Orçamentos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Orçamentos ({orcamentos.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {orcamentos.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">Nenhum orçamento registrado</p>
+                ) : (
+                  <div className="space-y-4">
+                    {orcamentos.map((orcamento) => (
+                      <div key={orcamento.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="font-medium">Orçamento #{orcamento.numero_orcamento}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(orcamento.created_at).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium text-lg">
+                              R$ {orcamento.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                            {getStatusBadge(orcamento.status)}
+                          </div>
+                        </div>
+                        
+                        {orcamento.itens.length > 0 && (
+                          <div className="mt-3 pt-3 border-t">
+                            <h5 className="text-sm font-medium mb-2">Procedimentos:</h5>
+                            <div className="space-y-2">
+                              {orcamento.itens.map((item) => (
+                                <div key={item.id} className="flex items-center justify-between text-sm">
+                                  <div className="flex-1">
+                                    <p>{item.procedimento.nome}</p>
+                                    {item.dente && (
+                                      <p className="text-muted-foreground">Dente: {item.dente}</p>
+                                    )}
+                                    {item.observacoes && (
+                                      <p className="text-muted-foreground text-xs">{item.observacoes}</p>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <p>Qtd: {item.quantidade}</p>
+                                    <p className="font-medium">
+                                      R$ {(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Arquivos do Paciente */}
+            {pacienteId && (
+              <UploadArquivosPaciente
+                pacienteId={pacienteId}
+                pacienteNome={paciente.nome}
+                arquivos={arquivos}
+                onArquivoAdicionado={loadPacienteData}
+              />
+            )}
+
             {/* Histórico Financeiro */}
             <Card>
               <CardHeader>
@@ -436,16 +562,6 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                 )}
               </CardContent>
             </Card>
-
-            {/* Arquivos do Paciente */}
-            {pacienteId && (
-              <UploadArquivosPaciente
-                pacienteId={pacienteId}
-                pacienteNome={paciente.nome}
-                arquivos={arquivos}
-                onArquivoAdicionado={loadPacienteData}
-              />
-            )}
           </div>
         ) : null}
 

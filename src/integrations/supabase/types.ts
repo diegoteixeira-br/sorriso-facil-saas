@@ -479,6 +479,7 @@ export type Database = {
           observacoes: string | null
           profissao: string | null
           responsavel: string | null
+          sexo: string | null
           telefone: string | null
           telefone_responsavel: string | null
           updated_at: string
@@ -496,6 +497,7 @@ export type Database = {
           observacoes?: string | null
           profissao?: string | null
           responsavel?: string | null
+          sexo?: string | null
           telefone?: string | null
           telefone_responsavel?: string | null
           updated_at?: string
@@ -513,6 +515,7 @@ export type Database = {
           observacoes?: string | null
           profissao?: string | null
           responsavel?: string | null
+          sexo?: string | null
           telefone?: string | null
           telefone_responsavel?: string | null
           updated_at?: string
