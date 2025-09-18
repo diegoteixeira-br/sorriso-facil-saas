@@ -34,7 +34,9 @@ import {
   Clock,
   DollarSign,
   Edit,
-  Trash2
+  Trash2,
+  Check,
+  Square
 } from "lucide-react";
 
 interface VisualizarPacienteModalProps {
@@ -101,6 +103,7 @@ interface OrcamentoItem {
   preco_unitario: number;
   dente?: number;
   observacoes?: string;
+  realizado?: boolean;
   procedimento: {
     nome: string;
   };
@@ -118,6 +121,8 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
   const [excluirConsultaModalOpen, setExcluirConsultaModalOpen] = useState(false);
   const [consultaParaExcluir, setConsultaParaExcluir] = useState<string | null>(null);
   const [editarProcedimentoModalOpen, setEditarProcedimentoModalOpen] = useState(false);
+  const [excluirOrcamentoModalOpen, setExcluirOrcamentoModalOpen] = useState(false);
+  const [orcamentoParaExcluir, setOrcamentoParaExcluir] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -192,6 +197,7 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
         ...orc,
         itens: orc.orcamento_itens?.map((item: any) => ({
           ...item,
+          realizado: false, // Inicialmente não realizado
           procedimento: item.procedimentos
         })) || []
       }));
@@ -262,6 +268,50 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
         variant: "destructive",
       });
     }
+  };
+
+  const handleExcluirOrcamento = (orcamentoId: string) => {
+    setOrcamentoParaExcluir(orcamentoId);
+    setExcluirOrcamentoModalOpen(true);
+  };
+
+  const confirmarExclusaoOrcamento = async () => {
+    if (!orcamentoParaExcluir) return;
+
+    try {
+      const { error } = await supabase
+        .from("orcamentos")
+        .delete()
+        .eq("id", orcamentoParaExcluir);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Orçamento excluído com sucesso",
+      });
+
+      // Recarregar dados
+      loadPacienteData();
+      setExcluirOrcamentoModalOpen(false);
+      setOrcamentoParaExcluir(null);
+    } catch (error) {
+      console.error("Erro ao excluir orçamento:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir orçamento",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleProcedimentoRealizado = (orcamentoIndex: number, itemIndex: number) => {
+    setOrcamentos(prevOrcamentos => {
+      const newOrcamentos = [...prevOrcamentos];
+      newOrcamentos[orcamentoIndex].itens[itemIndex].realizado = 
+        !newOrcamentos[orcamentoIndex].itens[itemIndex].realizado;
+      return newOrcamentos;
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -463,7 +513,7 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                   <p className="text-muted-foreground text-center py-4">Nenhum orçamento registrado</p>
                 ) : (
                   <div className="space-y-4">
-                    {orcamentos.map((orcamento) => (
+                    {orcamentos.map((orcamento, orcamentoIndex) => (
                       <div key={orcamento.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -472,34 +522,58 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                               {new Date(orcamento.created_at).toLocaleDateString('pt-BR')}
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-medium text-lg">
-                              R$ {orcamento.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                            </p>
+                          <div className="flex items-center gap-2">
                             {getStatusBadge(orcamento.status)}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleExcluirOrcamento(orcamento.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
                         
                         {orcamento.itens.length > 0 && (
                           <div className="mt-3 pt-3 border-t">
-                            <h5 className="text-sm font-medium mb-2">Procedimentos:</h5>
-                            <div className="space-y-2">
-                              {orcamento.itens.map((item) => (
-                                <div key={item.id} className="flex items-center justify-between text-sm">
-                                  <div className="flex-1">
-                                    <p>{item.procedimento.nome}</p>
-                                    {item.dente && (
-                                      <p className="text-muted-foreground">Dente: {item.dente}</p>
+                            <h5 className="text-sm font-medium mb-3">Acompanhamento do Tratamento:</h5>
+                            <div className="space-y-3">
+                              {orcamento.itens.map((item, itemIndex) => (
+                                <div key={item.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
+                                  <button
+                                    onClick={() => toggleProcedimentoRealizado(orcamentoIndex, itemIndex)}
+                                    className="mt-1 text-primary hover:text-primary/80"
+                                  >
+                                    {item.realizado ? (
+                                      <Check className="w-5 h-5 text-green-600" />
+                                    ) : (
+                                      <Square className="w-5 h-5" />
                                     )}
+                                  </button>
+                                  <div className="flex-1">
+                                    <p className={`font-medium ${item.realizado ? 'line-through text-muted-foreground' : ''}`}>
+                                      {item.procedimento.nome}
+                                    </p>
+                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                      {item.dente && <span>Dente: {item.dente}</span>}
+                                      <span>Qtd: {item.quantidade}</span>
+                                      <span>
+                                        R$ {(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                      </span>
+                                    </div>
                                     {item.observacoes && (
-                                      <p className="text-muted-foreground text-xs">{item.observacoes}</p>
+                                      <p className="text-xs text-muted-foreground mt-1">{item.observacoes}</p>
                                     )}
                                   </div>
                                   <div className="text-right">
-                                    <p>Qtd: {item.quantidade}</p>
-                                    <p className="font-medium">
-                                      R$ {(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                    </p>
+                                    <div className={`px-2 py-1 rounded text-xs ${
+                                      item.realizado 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-yellow-100 text-yellow-800'
+                                    }`}>
+                                      {item.realizado ? 'Realizado' : 'Pendente'}
+                                    </div>
                                   </div>
                                 </div>
                               ))}
@@ -591,13 +665,25 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setExcluirConsultaModalOpen(false);
-                setConsultaParaExcluir(null);
-              }}>
-                Cancelar
-              </AlertDialogCancel>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={confirmarExclusaoConsulta}>
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={excluirOrcamentoModalOpen} onOpenChange={setExcluirOrcamentoModalOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmarExclusaoOrcamento}>
                 Excluir
               </AlertDialogAction>
             </AlertDialogFooter>
