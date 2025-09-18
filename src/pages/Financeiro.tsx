@@ -180,7 +180,7 @@ const Financeiro = () => {
   };
 
   const handleExcluirPlano = async (planoId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este plano de pagamento?')) {
+    if (!confirm('Tem certeza que deseja excluir este plano de pagamento? Todas as parcelas associadas também serão excluídas.')) {
       return;
     }
 
@@ -192,11 +192,11 @@ const Financeiro = () => {
 
       if (error) throw error;
 
-      toast.success('Plano de pagamento excluído com sucesso!');
+      toast.success('Plano de pagamento e parcelas excluídos com sucesso!');
       fetchPlanosPagamento();
     } catch (error) {
       console.error('Erro ao excluir plano de pagamento:', error);
-      toast.error('Erro ao excluir plano de pagamento');
+      toast.error('Erro ao excluir plano de pagamento: ' + (error as any).message);
     }
   };
 
