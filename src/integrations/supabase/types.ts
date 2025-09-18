@@ -376,6 +376,7 @@ export type Database = {
       }
       orcamentos: {
         Row: {
+          arquivado: boolean
           created_at: string
           desconto: number | null
           id: string
@@ -389,6 +390,7 @@ export type Database = {
           valor_total: number | null
         }
         Insert: {
+          arquivado?: boolean
           created_at?: string
           desconto?: number | null
           id?: string
@@ -402,6 +404,7 @@ export type Database = {
           valor_total?: number | null
         }
         Update: {
+          arquivado?: boolean
           created_at?: string
           desconto?: number | null
           id?: string

@@ -306,24 +306,89 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
     }
   };
 
-  const toggleProcedimentoRealizado = (orcamentoIndex: number, itemIndex: number) => {
-    setOrcamentos(prevOrcamentos => {
-      const newOrcamentos = [...prevOrcamentos];
-      const item = newOrcamentos[orcamentoIndex].itens[itemIndex];
-      
-      // Toggle do status realizado
-      item.realizado = !item.realizado;
-      
-      // Se marcado como realizado, adiciona a data atual
-      if (item.realizado) {
-        item.data_realizacao = new Date().toISOString();
-      } else {
-        // Se desmarcado, remove a data
-        item.data_realizacao = undefined;
+  // Função para verificar se todos os itens estão realizados e arquivar se necessário
+  const verificarEArquivarTratamento = async (orcamentoId: string) => {
+    try {
+      // Buscar todos os itens do orçamento
+      const { data: itens, error: itensError } = await supabase
+        .from("orcamento_itens")
+        .select("realizado")
+        .eq("orcamento_id", orcamentoId);
+
+      if (itensError) throw itensError;
+
+      // Verificar se todos os itens estão realizados
+      const todosRealizados = itens && itens.length > 0 && itens.every(item => item.realizado);
+
+      if (todosRealizados) {
+        // Arquivar o orçamento
+        const { error: arquivarError } = await supabase
+          .from("orcamentos")
+          .update({ arquivado: true })
+          .eq("id", orcamentoId);
+
+        if (arquivarError) throw arquivarError;
+
+        toast({
+          title: "Tratamento finalizado",
+          description: "Todos os procedimentos foram concluídos. A evolução do tratamento foi arquivada.",
+        });
       }
+    } catch (error: any) {
+      console.error("Erro ao verificar/arquivar tratamento:", error);
+    }
+  };
+
+  const toggleProcedimentoRealizado = async (orcamentoIndex: number, itemIndex: number) => {
+    const orcamento = orcamentos[orcamentoIndex];
+    const item = orcamento.itens[itemIndex];
+    const novoStatus = !item.realizado;
+    
+    try {
+      // Atualizar no banco de dados
+      const { error } = await supabase
+        .from("orcamento_itens")
+        .update({ 
+          realizado: novoStatus,
+          data_realizacao: novoStatus ? new Date().toISOString().split('T')[0] : null
+        })
+        .eq("id", item.id);
+
+      if (error) throw error;
+
+      // Atualizar estado local
+      setOrcamentos(prevOrcamentos => {
+        const newOrcamentos = [...prevOrcamentos];
+        const updatedItem = newOrcamentos[orcamentoIndex].itens[itemIndex];
+        
+        updatedItem.realizado = novoStatus;
+        
+        if (novoStatus) {
+          updatedItem.data_realizacao = new Date().toISOString();
+        } else {
+          updatedItem.data_realizacao = undefined;
+        }
+        
+        return newOrcamentos;
+      });
+
+      // Verificar e arquivar se todos os itens estão realizados
+      await verificarEArquivarTratamento(orcamento.id);
+
+      // Recarregar dados para sincronizar com o banco
+      await loadPacienteData();
       
-      return newOrcamentos;
-    });
+      toast({
+        title: "Status atualizado",
+        description: "Status do procedimento atualizado com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar status do procedimento: " + error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
