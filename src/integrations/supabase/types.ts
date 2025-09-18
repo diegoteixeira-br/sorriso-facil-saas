@@ -536,6 +536,7 @@ export type Database = {
           paciente_id: string
           parcela_numero: number | null
           plano_pagamento: boolean | null
+          plano_pagamento_id: string | null
           status: string | null
           updated_at: string
           user_id: string | null
@@ -558,6 +559,7 @@ export type Database = {
           paciente_id: string
           parcela_numero?: number | null
           plano_pagamento?: boolean | null
+          plano_pagamento_id?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -580,6 +582,7 @@ export type Database = {
           paciente_id?: string
           parcela_numero?: number | null
           plano_pagamento?: boolean | null
+          plano_pagamento_id?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -609,17 +612,26 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pagamentos_plano_pagamento_id_fkey"
+            columns: ["plano_pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "planos_pagamento"
+            referencedColumns: ["id"]
+          },
         ]
       }
       planos_pagamento: {
         Row: {
           created_at: string
+          data_vencimento_primeira_parcela: string | null
           forma_pagamento_entrada: string | null
           forma_pagamento_parcelas: string
           id: string
           numero_parcelas: number
           observacoes: string | null
           paciente_id: string
+          parcelas_geradas: boolean | null
           status: string | null
           updated_at: string
           user_id: string
@@ -629,12 +641,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          data_vencimento_primeira_parcela?: string | null
           forma_pagamento_entrada?: string | null
           forma_pagamento_parcelas: string
           id?: string
           numero_parcelas?: number
           observacoes?: string | null
           paciente_id: string
+          parcelas_geradas?: boolean | null
           status?: string | null
           updated_at?: string
           user_id: string
@@ -644,12 +658,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          data_vencimento_primeira_parcela?: string | null
           forma_pagamento_entrada?: string | null
           forma_pagamento_parcelas?: string
           id?: string
           numero_parcelas?: number
           observacoes?: string | null
           paciente_id?: string
+          parcelas_geradas?: boolean | null
           status?: string | null
           updated_at?: string
           user_id?: string
@@ -828,6 +844,10 @@ export type Database = {
           p_duracao_minutos: number
         }
         Returns: boolean
+      }
+      gerar_parcelas_plano: {
+        Args: { p_plano_id: string }
+        Returns: undefined
       }
       get_horarios_disponiveis: {
         Args: {

@@ -68,6 +68,7 @@ export default function Orcamentos() {
     forma_pagamento_entrada: '',
     forma_pagamento_parcelas: 'boleto',
     numero_parcelas: '1',
+    data_vencimento_primeira_parcela: '',
     observacoes: ''
   });
   
@@ -292,31 +293,43 @@ export default function Orcamentos() {
       const planoDataForSave = {
         user_id: user.user.id,
         paciente_id: selectedPaciente,
-        orcamento_id: orcamentoSalvo.id,
-        valor: valorParcelaCalculado, // Valor da parcela calculada com juros
         valor_total: orcamentoSalvo.valor_total,
         valor_entrada: planoData.valor_entrada ? parseFloat(planoData.valor_entrada) : null,
-        forma_pagamento: planoData.forma_pagamento_parcelas,
         forma_pagamento_entrada: planoData.forma_pagamento_entrada || null,
+        forma_pagamento_parcelas: planoData.forma_pagamento_parcelas,
         numero_parcelas: parseInt(planoData.numero_parcelas),
-        parcela_numero: 0, // Registro principal
-        plano_pagamento: true,
+        valor_parcela: valorParcelaCalculado,
+        data_vencimento_primeira_parcela: planoData.data_vencimento_primeira_parcela,
         status: 'ativo',
         observacoes: planoData.observacoes
       };
 
       const { data: planoSalvo, error } = await supabase
-        .from('pagamentos')
+        .from('planos_pagamento')
         .insert([planoDataForSave])
         .select()
         .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Sucesso",
-        description: "Plano de pagamento criado com sucesso! Agora você pode gerar o contrato.",
+      // Gerar as parcelas automaticamente
+      const { error: errorParcelas } = await supabase.rpc('gerar_parcelas_plano', {
+        p_plano_id: planoSalvo.id
       });
+
+      if (errorParcelas) {
+        console.error('Erro ao gerar parcelas:', errorParcelas);
+        toast({
+          title: "Aviso",
+          description: "Plano criado, mas houve erro ao gerar as parcelas automaticamente.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sucesso",
+          description: "Plano de pagamento criado com sucesso! As parcelas foram geradas automaticamente.",
+        });
+      }
 
       setPlanoSalvoId(planoSalvo.id);
     } catch (error) {
@@ -340,6 +353,7 @@ export default function Orcamentos() {
       forma_pagamento_entrada: '',
       forma_pagamento_parcelas: 'boleto',
       numero_parcelas: '1',
+      data_vencimento_primeira_parcela: '',
       observacoes: ''
     });
   };
@@ -714,6 +728,17 @@ export default function Orcamentos() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="data_vencimento_primeira_parcela">Data de Vencimento da 1ª Parcela</Label>
+                    <Input
+                      id="data_vencimento_primeira_parcela"
+                      type="date"
+                      value={planoData.data_vencimento_primeira_parcela}
+                      onChange={(e) => setPlanoData(prev => ({ ...prev, data_vencimento_primeira_parcela: e.target.value }))}
+                      required
+                    />
                   </div>
 
                   <div>

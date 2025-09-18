@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ContratoModal } from "@/components/ContratoModal";
+import { AcompanhamentoParcelas } from "@/components/AcompanhamentoParcelas";
 import { cn } from "@/lib/utils";
 
 interface Paciente {
@@ -38,14 +39,13 @@ interface PlanosPagamento {
     nome: string;
     email?: string;
   };
-  valor: number;
-  valor_total?: number;
+  valor_total: number;
   valor_entrada?: number;
-  forma_pagamento: string;
+  valor_parcela: number;
   forma_pagamento_entrada?: string;
-  numero_parcelas?: number;
-  parcela_numero?: number;
-  plano_pagamento?: boolean;
+  forma_pagamento_parcelas: string;
+  numero_parcelas: number;
+  data_vencimento_primeira_parcela?: string;
   status: string;
   observacoes?: string;
   created_at: string;
@@ -61,6 +61,8 @@ const Financeiro = () => {
   const [taxaJurosBoleto, setTaxaJurosBoleto] = useState<number>(1.5);
   const [contratoModalOpen, setContratoModalOpen] = useState(false);
   const [selectedPlanoId, setSelectedPlanoId] = useState<string | null>(null);
+  const [acompanhamentoParcelasOpen, setAcompanhamentoParcelasOpen] = useState(false);
+  const [selectedPlanoParaAcompanhamento, setSelectedPlanoParaAcompanhamento] = useState<string | null>(null);
 
   const statusPlano = [
     { value: 'ativo', label: 'Ativo', color: 'bg-green-100 text-green-800' },
@@ -84,13 +86,9 @@ const Financeiro = () => {
 
   const fetchPlanosPagamento = async () => {
     const { data, error } = await supabase
-      .from('pagamentos')
-      .select(`
-        *,
-        paciente:pacientes(nome, email)
-      `)
+      .from('planos_pagamento')
+      .select('*, paciente_id')
       .eq('user_id', user?.id)
-      .eq('plano_pagamento', true)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -98,7 +96,24 @@ const Financeiro = () => {
       toast.error('Erro ao carregar planos de pagamento');
       return;
     }
-    setPlanosPagamento(data || []);
+
+    // Buscar dados dos pacientes separadamente
+    if (data && data.length > 0) {
+      const pacienteIds = data.map(plano => plano.paciente_id);
+      const { data: pacientesData } = await supabase
+        .from('pacientes')
+        .select('id, nome, email')
+        .in('id', pacienteIds);
+
+      const planosComPacientes = data.map(plano => ({
+        ...plano,
+        paciente: pacientesData?.find(p => p.id === plano.paciente_id)
+      }));
+
+      setPlanosPagamento(planosComPacientes);
+    } else {
+      setPlanosPagamento([]);
+    }
   };
 
   useEffect(() => {
@@ -126,7 +141,11 @@ const Financeiro = () => {
   };
 
   const calculateParcelaDisplay = (plano: PlanosPagamento) => {
-    const valorTotal = plano.valor_total || plano.valor;
+    return plano.valor_parcela;
+  };
+
+  const calculateParcelaDisplayOLD = (plano: PlanosPagamento) => {
+    const valorTotal = plano.valor_total;
     const valorEntrada = plano.valor_entrada || 0;
     const numeroParcelas = plano.numero_parcelas || 1;
     
@@ -134,14 +153,14 @@ const Financeiro = () => {
     let valorParcela = valorRestante / numeroParcelas;
     
     // Aplicar juros se for cartão e acima de 1x
-    if (plano.forma_pagamento === 'cartao' && numeroParcelas > 1) {
+    if (plano.forma_pagamento_parcelas === 'cartao' && numeroParcelas > 1) {
       const taxaJurosMensal = taxaJurosCartao / 100;
       const fatorJuros = Math.pow(1 + taxaJurosMensal, numeroParcelas);
       valorParcela = valorRestante * (taxaJurosMensal * fatorJuros) / (fatorJuros - 1);
     }
     
     // Aplicar juros se for boleto e acima de 1x
-    if (plano.forma_pagamento === 'boleto' && numeroParcelas > 1) {
+    if (plano.forma_pagamento_parcelas === 'boleto' && numeroParcelas > 1) {
       const taxaJurosMensal = taxaJurosBoleto / 100;
       const fatorJuros = Math.pow(1 + taxaJurosMensal, numeroParcelas);
       valorParcela = valorRestante * (taxaJurosMensal * fatorJuros) / (fatorJuros - 1);
@@ -167,7 +186,7 @@ const Financeiro = () => {
 
     try {
       const { error } = await supabase
-        .from('pagamentos')
+        .from('planos_pagamento')
         .delete()
         .eq('id', planoId);
 
@@ -240,7 +259,7 @@ const Financeiro = () => {
                           {plano.paciente?.nome}
                         </TableCell>
                         <TableCell>
-                          R$ {(plano.valor_total || plano.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {plano.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell>
                           {plano.valor_entrada 
@@ -253,7 +272,7 @@ const Financeiro = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {plano.forma_pagamento === 'boleto' ? 'Boleto' : 'Cartão'}
+                            {plano.forma_pagamento_parcelas === 'boleto' ? 'Boleto' : 'Cartão'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -261,7 +280,7 @@ const Financeiro = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {plano.forma_pagamento === 'boleto' && (
+                            {plano.forma_pagamento_parcelas === 'boleto' && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -271,25 +290,36 @@ const Financeiro = () => {
                                 Gerar Boletos
                               </Button>
                             )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedPlanoParaAcompanhamento(plano.id);
+                                  setAcompanhamentoParcelasOpen(true);
+                                }}
+                              >
+                                <CreditCard className="w-4 h-4 mr-1" />
+                                Parcelas
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedPlanoId(plano.id);
+                                  setContratoModalOpen(true);
+                                }}
+                              >
+                                <FileCheck className="w-4 h-4 mr-1" />
+                                Contrato
+                              </Button>
                              <Button
                                variant="outline"
-                               size="sm"
-                               onClick={() => {
-                                 setSelectedPlanoId(plano.id);
-                                 setContratoModalOpen(true);
-                               }}
+                               size="icon"
+                               onClick={() => handleExcluirPlano(plano.id)}
+                               className="text-destructive hover:text-destructive h-8 w-8"
                              >
-                               <FileCheck className="w-4 h-4 mr-1" />
-                               Contrato
+                               <Trash2 className="w-4 h-4" />
                              </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleExcluirPlano(plano.id)}
-                              className="text-destructive hover:text-destructive h-8 w-8"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -313,6 +343,20 @@ const Financeiro = () => {
         onOpenChange={setContratoModalOpen}
         planoId={selectedPlanoId || undefined}
       />
+
+      {acompanhamentoParcelasOpen && selectedPlanoParaAcompanhamento && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background max-w-6xl w-full max-h-[90vh] overflow-auto rounded-lg">
+            <AcompanhamentoParcelas
+              planoId={selectedPlanoParaAcompanhamento}
+              onClose={() => {
+                setAcompanhamentoParcelasOpen(false);
+                setSelectedPlanoParaAcompanhamento(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
