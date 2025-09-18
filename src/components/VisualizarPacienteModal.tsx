@@ -288,7 +288,7 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
 
       toast({
         title: "Sucesso",
-        description: "Orçamento excluído com sucesso",
+        description: "Evolução de tratamento excluída com sucesso",
       });
 
       // Recarregar dados
@@ -296,10 +296,10 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
       setExcluirOrcamentoModalOpen(false);
       setOrcamentoParaExcluir(null);
     } catch (error) {
-      console.error("Erro ao excluir orçamento:", error);
+      console.error("Erro ao excluir evolução:", error);
       toast({
         title: "Erro",
-        description: "Erro ao excluir orçamento",
+        description: "Erro ao excluir evolução de tratamento",
         variant: "destructive",
       });
     }
@@ -500,24 +500,24 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
               </CardContent>
             </Card>
 
-            {/* Orçamentos */}
+            {/* Evolução do Tratamento */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Orçamentos ({orcamentos.length})
+                  Evolução do Tratamento ({orcamentos.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {orcamentos.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">Nenhum orçamento registrado</p>
+                  <p className="text-muted-foreground text-center py-4">Nenhuma evolução de tratamento registrada</p>
                 ) : (
                   <div className="space-y-4">
                     {orcamentos.map((orcamento, orcamentoIndex) => (
                       <div key={orcamento.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <p className="font-medium">Orçamento #{orcamento.numero_orcamento}</p>
+                            <p className="font-medium">Evolução #{orcamento.numero_orcamento}</p>
                             <p className="text-sm text-muted-foreground">
                               {new Date(orcamento.created_at).toLocaleDateString('pt-BR')}
                             </p>
@@ -678,7 +678,7 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
             <AlertDialogHeader>
               <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
               <AlertDialogDescription>
-                Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.
+                Tem certeza que deseja excluir esta evolução de tratamento? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
