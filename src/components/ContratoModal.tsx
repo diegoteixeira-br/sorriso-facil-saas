@@ -93,7 +93,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
             )
           `)
           .eq('id', orcamentoId)
-          .single();
+          .maybeSingle();
 
         orcamento = orcamentoData;
       }
