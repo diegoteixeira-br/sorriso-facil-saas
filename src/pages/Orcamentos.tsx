@@ -293,6 +293,7 @@ export default function Orcamentos() {
       const planoDataForSave = {
         user_id: user.user.id,
         paciente_id: selectedPaciente,
+        orcamento_id: orcamentoSalvo.id,
         valor_total: orcamentoSalvo.valor_total,
         valor_entrada: planoData.valor_entrada ? parseFloat(planoData.valor_entrada) : null,
         forma_pagamento_entrada: planoData.forma_pagamento_entrada || null,

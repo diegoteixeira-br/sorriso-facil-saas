@@ -99,15 +99,26 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
       }
 
       if (planoId) {
-        // Buscar plano de pagamento e tentar encontrar o orçamento relacionado
+        // Buscar plano de pagamento e o orçamento relacionado
         const { data: planoData } = await supabase
           .from('planos_pagamento')
           .select(`
             *,
-            paciente:pacientes(nome, cpf, telefone, endereco)
+            paciente:pacientes(nome, cpf, telefone, endereco),
+            orcamento:orcamentos(
+              numero_orcamento,
+              valor_total,
+              itens:orcamento_itens(
+                quantidade,
+                preco_unitario,
+                dente,
+                observacoes,
+                procedimento:procedimentos(nome)
+              )
+            )
           `)
           .eq('id', planoId)
-          .single();
+          .maybeSingle();
 
         if (planoData) {
           plano = {
@@ -118,34 +129,15 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
             forma_pagamento_parcelas: planoData.forma_pagamento_parcelas
           };
 
-          // Buscar orçamentos relacionados ao mesmo paciente para obter os itens
-          const { data: orcamentoPaciente } = await supabase
-            .from('orcamentos')
-            .select(`
-              numero_orcamento,
-              valor_total,
-              itens:orcamento_itens(
-                quantidade,
-                preco_unitario,
-                dente,
-                observacoes,
-                procedimento:procedimentos(nome)
-              )
-            `)
-            .eq('paciente_id', planoData.paciente_id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (orcamentoPaciente) {
+          if (planoData.orcamento) {
             orcamento = {
-              numero_orcamento: orcamentoPaciente.numero_orcamento,
+              numero_orcamento: planoData.orcamento.numero_orcamento,
               valor_total: planoData.valor_total,
               paciente: planoData.paciente,
-              itens: orcamentoPaciente.itens || []
+              itens: planoData.orcamento.itens || []
             };
           } else {
-            // Se não encontrar orçamento, criar um básico
+            // Se não encontrar orçamento vinculado, criar um básico
             orcamento = {
               numero_orcamento: `PLANO-${planoId.slice(-8)}`,
               valor_total: planoData.valor_total,

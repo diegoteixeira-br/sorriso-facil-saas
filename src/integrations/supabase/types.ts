@@ -630,6 +630,7 @@ export type Database = {
           id: string
           numero_parcelas: number
           observacoes: string | null
+          orcamento_id: string | null
           paciente_id: string
           parcelas_geradas: boolean | null
           status: string | null
@@ -647,6 +648,7 @@ export type Database = {
           id?: string
           numero_parcelas?: number
           observacoes?: string | null
+          orcamento_id?: string | null
           paciente_id: string
           parcelas_geradas?: boolean | null
           status?: string | null
@@ -664,6 +666,7 @@ export type Database = {
           id?: string
           numero_parcelas?: number
           observacoes?: string | null
+          orcamento_id?: string | null
           paciente_id?: string
           parcelas_geradas?: boolean | null
           status?: string | null
@@ -673,7 +676,15 @@ export type Database = {
           valor_parcela?: number
           valor_total?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "planos_pagamento_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       procedimentos: {
         Row: {
