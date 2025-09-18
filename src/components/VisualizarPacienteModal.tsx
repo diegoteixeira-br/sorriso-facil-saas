@@ -104,6 +104,7 @@ interface OrcamentoItem {
   dente?: number;
   observacoes?: string;
   realizado?: boolean;
+  data_realizacao?: string;
   procedimento: {
     nome: string;
   };
@@ -308,8 +309,19 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
   const toggleProcedimentoRealizado = (orcamentoIndex: number, itemIndex: number) => {
     setOrcamentos(prevOrcamentos => {
       const newOrcamentos = [...prevOrcamentos];
-      newOrcamentos[orcamentoIndex].itens[itemIndex].realizado = 
-        !newOrcamentos[orcamentoIndex].itens[itemIndex].realizado;
+      const item = newOrcamentos[orcamentoIndex].itens[itemIndex];
+      
+      // Toggle do status realizado
+      item.realizado = !item.realizado;
+      
+      // Se marcado como realizado, adiciona a data atual
+      if (item.realizado) {
+        item.data_realizacao = new Date().toISOString();
+      } else {
+        // Se desmarcado, remove a data
+        item.data_realizacao = undefined;
+      }
+      
       return newOrcamentos;
     });
   };
@@ -561,6 +573,11 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                                       <span>
                                         R$ {(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                       </span>
+                                      {item.realizado && item.data_realizacao && (
+                                        <span className="text-green-600 font-medium">
+                                          Realizado em: {new Date(item.data_realizacao).toLocaleDateString('pt-BR')}
+                                        </span>
+                                      )}
                                     </div>
                                     {item.observacoes && (
                                       <p className="text-xs text-muted-foreground mt-1">{item.observacoes}</p>
