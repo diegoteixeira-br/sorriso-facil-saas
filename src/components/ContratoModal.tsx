@@ -66,8 +66,6 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
   const loadContratoData = async () => {
     setLoading(true);
     try {
-      console.log('Loading contract data for:', { orcamentoId, planoId });
-      
       // Buscar dados da clínica
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -75,7 +73,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
         .eq('user_id', user?.id)
         .single();
 
-      console.log('Profile data:', profile, 'Error:', profileError);
+      
 
       let orcamento = null;
       let plano = null;
@@ -99,7 +97,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
           .eq('id', orcamentoId)
           .maybeSingle();
 
-        console.log('Orcamento data:', orcamentoData, 'Error:', orcamentoError);
+        
         orcamento = orcamentoData;
       }
 
@@ -111,7 +109,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
           .eq('id', planoId)
           .maybeSingle();
 
-        console.log('Plano data:', planoData, 'Error:', planoError);
+        
 
         if (planoData) {
           plano = {
@@ -119,7 +117,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
             forma_pagamento_entrada: planoData.forma_pagamento_entrada,
             numero_parcelas: planoData.numero_parcelas,
             valor_parcela: planoData.valor_parcela,
-            forma_pagamento_parcelas: planoData.forma_pagamento_parcelas
+            forma_pagamento: planoData.forma_pagamento_parcelas
           };
 
           // Buscar paciente
@@ -129,7 +127,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
             .eq('id', planoData.paciente_id)
             .maybeSingle();
 
-          console.log('Paciente data:', pacienteData, 'Error:', pacienteError);
+          
 
           // Buscar orçamento se existe
           if (planoData.orcamento_id) {
@@ -142,7 +140,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
               .eq('id', planoData.orcamento_id)
               .maybeSingle();
 
-            console.log('Orcamento from plano:', orcamentoData, 'Error:', orcamentoError);
+            
 
             // Buscar itens do orçamento
             const { data: itensData, error: itensError } = await supabase
@@ -156,7 +154,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
               `)
               .eq('orcamento_id', planoData.orcamento_id);
 
-            console.log('Itens data:', itensData, 'Error:', itensError);
+            
 
             if (orcamentoData && pacienteData) {
               orcamento = {
@@ -178,11 +176,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
         }
       }
 
-      console.log('Final orcamento data:', orcamento);
-      console.log('Final plano data:', plano);
-
       if (!orcamento) {
-        console.error('No orcamento data found');
         toast({
           title: "Erro",
           description: "Dados do orçamento não encontrados",
@@ -222,7 +216,7 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
           valor_entrada: (plano.valor_entrada as number) ?? undefined,
           forma_pagamento_entrada: plano.forma_pagamento_entrada,
           numero_parcelas: Number(plano.numero_parcelas) || 1,
-          valor_parcela: Number(plano.valor) || 0, // O campo 'valor' agora contém o valor da parcela
+          valor_parcela: Number(plano.valor_parcela) || 0,
           forma_pagamento_parcelas: plano.forma_pagamento,
         };
       }
