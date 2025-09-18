@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -36,7 +37,9 @@ import {
   Edit,
   Trash2,
   Check,
-  Square
+  Square,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 interface VisualizarPacienteModalProps {
@@ -117,6 +120,7 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [arquivos, setArquivos] = useState<ArquivoPaciente[]>([]);
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
+  const [expandedTreatments, setExpandedTreatments] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [editarConsultaModalOpen, setEditarConsultaModalOpen] = useState(false);
   const [consultaParaEditar, setConsultaParaEditar] = useState<string | null>(null);
@@ -126,7 +130,19 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
   const [excluirOrcamentoModalOpen, setExcluirOrcamentoModalOpen] = useState(false);
   const [orcamentoParaExcluir, setOrcamentoParaExcluir] = useState<string | null>(null);
   const { toast } = useToast();
-
+  
+  // Função para alternar expansão dos tratamentos
+  const toggleTreatmentExpansion = (orcamentoId: string) => {
+    setExpandedTreatments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orcamentoId)) {
+        newSet.delete(orcamentoId);
+      } else {
+        newSet.add(orcamentoId);
+      }
+      return newSet;
+    });
+  };
   useEffect(() => {
     if (open && pacienteId) {
       loadPacienteData();
@@ -590,90 +606,133 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                   <p className="text-muted-foreground text-center py-4">Nenhuma evolução de tratamento registrada</p>
                 ) : (
                   <div className="space-y-4">
-                    {orcamentos.map((orcamento, orcamentoIndex) => (
-                      <div key={orcamento.id} className="border rounded-lg p-4">
-                         <div className="flex items-center justify-between mb-3">
-                           <div>
-                             <div className="flex items-center gap-2">
-                               <p className="font-medium">Evolução #{orcamento.numero_orcamento}</p>
-                               {orcamento.arquivado && (
-                                 <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                   Arquivado
-                                 </Badge>
+                     {orcamentos.map((orcamento, orcamentoIndex) => {
+                       const isExpanded = expandedTreatments.has(orcamento.id);
+                       const isArchived = orcamento.arquivado;
+                       
+                       return (
+                         <Collapsible
+                           key={orcamento.id}
+                           open={isArchived ? isExpanded : true}
+                           onOpenChange={() => isArchived && toggleTreatmentExpansion(orcamento.id)}
+                         >
+                           <div className="border rounded-lg p-4">
+                             <CollapsibleTrigger asChild>
+                               <div className={`flex items-center justify-between mb-3 ${isArchived ? 'cursor-pointer hover:bg-muted/30 p-2 rounded -m-2' : ''}`}>
+                                 <div className="flex items-center gap-2">
+                                   <div className="flex items-center gap-2">
+                                     <p className="font-medium">Evolução #{orcamento.numero_orcamento}</p>
+                                     {orcamento.arquivado && (
+                                       <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                         Arquivado
+                                       </Badge>
+                                     )}
+                                   </div>
+                                   {isArchived && (
+                                     <Button variant="ghost" size="sm" className="p-1 h-auto">
+                                       {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                     </Button>
+                                   )}
+                                 </div>
+                                 {!isArchived && (
+                                   <div className="flex items-center gap-2">
+                                     {getStatusBadge(orcamento.status)}
+                                     <Button
+                                       variant="outline"
+                                       size="sm"
+                                       onClick={(e) => {
+                                         e.stopPropagation();
+                                         handleExcluirOrcamento(orcamento.id);
+                                       }}
+                                       className="text-red-600 hover:text-red-700"
+                                     >
+                                       <Trash2 className="w-4 h-4" />
+                                     </Button>
+                                   </div>
+                                 )}
+                               </div>
+                             </CollapsibleTrigger>
+                             
+                             <CollapsibleContent className="space-y-3">
+                               <div className="text-sm text-muted-foreground mb-3">
+                                 {new Date(orcamento.created_at).toLocaleDateString('pt-BR')}
+                               </div>
+                               
+                               {isArchived && (
+                                 <div className="flex items-center gap-2 mb-3">
+                                   {getStatusBadge(orcamento.status)}
+                                   <Button
+                                     variant="outline"
+                                     size="sm"
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       handleExcluirOrcamento(orcamento.id);
+                                     }}
+                                     className="text-red-600 hover:text-red-700"
+                                   >
+                                     <Trash2 className="w-4 h-4" />
+                                   </Button>
+                                 </div>
                                )}
-                             </div>
-                             <p className="text-sm text-muted-foreground">
-                               {new Date(orcamento.created_at).toLocaleDateString('pt-BR')}
-                             </p>
+                               
+                               {orcamento.itens.length > 0 && (
+                                 <div className="pt-3 border-t">
+                                   <h5 className="text-sm font-medium mb-3">Acompanhamento do Tratamento:</h5>
+                                   <div className="space-y-3">
+                                     {orcamento.itens.map((item, itemIndex) => (
+                                       <div key={item.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
+                                         <button
+                                           onClick={() => toggleProcedimentoRealizado(orcamentoIndex, itemIndex)}
+                                           className="mt-1 text-primary hover:text-primary/80"
+                                         >
+                                           {item.realizado ? (
+                                             <Check className="w-5 h-5 text-green-600" />
+                                           ) : (
+                                             <Square className="w-5 h-5" />
+                                           )}
+                                         </button>
+                                         <div className="flex-1">
+                                           <p className={`font-medium ${item.realizado ? 'line-through text-muted-foreground' : ''}`}>
+                                             {item.procedimento.nome}
+                                           </p>
+                                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                             {item.dente && <span>Dente: {item.dente}</span>}
+                                             <span>Qtd: {item.quantidade}</span>
+                                             <span>
+                                               R$ {(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                             </span>
+                                             {item.realizado && item.data_realizacao && (
+                                               <span className="text-green-600 font-medium">
+                                                 Realizado em: {new Date(item.data_realizacao).toLocaleDateString('pt-BR')}
+                                               </span>
+                                             )}
+                                           </div>
+                                           {item.observacoes && (
+                                             <p className="text-xs text-muted-foreground mt-1">{item.observacoes}</p>
+                                           )}
+                                         </div>
+                                         <div className="text-right">
+                                           <div className={`px-2 py-1 rounded text-xs ${
+                                             item.realizado 
+                                               ? 'bg-green-100 text-green-800' 
+                                               : 'bg-yellow-100 text-yellow-800'
+                                           }`}>
+                                             {item.realizado ? 'Realizado' : 'Pendente'}
+                                           </div>
+                                         </div>
+                                       </div>
+                                     ))}
+                                   </div>
+                                 </div>
+                               )}
+                             </CollapsibleContent>
                            </div>
-                           <div className="flex items-center gap-2">
-                            {getStatusBadge(orcamento.status)}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleExcluirOrcamento(orcamento.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {orcamento.itens.length > 0 && (
-                          <div className="mt-3 pt-3 border-t">
-                            <h5 className="text-sm font-medium mb-3">Acompanhamento do Tratamento:</h5>
-                            <div className="space-y-3">
-                              {orcamento.itens.map((item, itemIndex) => (
-                                <div key={item.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
-                                  <button
-                                    onClick={() => toggleProcedimentoRealizado(orcamentoIndex, itemIndex)}
-                                    className="mt-1 text-primary hover:text-primary/80"
-                                  >
-                                    {item.realizado ? (
-                                      <Check className="w-5 h-5 text-green-600" />
-                                    ) : (
-                                      <Square className="w-5 h-5" />
-                                    )}
-                                  </button>
-                                  <div className="flex-1">
-                                    <p className={`font-medium ${item.realizado ? 'line-through text-muted-foreground' : ''}`}>
-                                      {item.procedimento.nome}
-                                    </p>
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                      {item.dente && <span>Dente: {item.dente}</span>}
-                                      <span>Qtd: {item.quantidade}</span>
-                                      <span>
-                                        R$ {(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                      </span>
-                                      {item.realizado && item.data_realizacao && (
-                                        <span className="text-green-600 font-medium">
-                                          Realizado em: {new Date(item.data_realizacao).toLocaleDateString('pt-BR')}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {item.observacoes && (
-                                      <p className="text-xs text-muted-foreground mt-1">{item.observacoes}</p>
-                                    )}
-                                  </div>
-                                  <div className="text-right">
-                                    <div className={`px-2 py-1 rounded text-xs ${
-                                      item.realizado 
-                                        ? 'bg-green-100 text-green-800' 
-                                        : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
-                                      {item.realizado ? 'Realizado' : 'Pendente'}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
+                         </Collapsible>
+                       );
+                     })}
+                   </div>
+                 )}
+               </CardContent>
             </Card>
 
             {/* Arquivos do Paciente */}
