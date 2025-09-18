@@ -94,6 +94,7 @@ interface Orcamento {
   valor_total: number;
   status: string;
   created_at: string;
+  arquivado: boolean;
   itens: OrcamentoItem[];
 }
 
@@ -198,7 +199,6 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
         ...orc,
         itens: orc.orcamento_itens?.map((item: any) => ({
           ...item,
-          realizado: false, // Inicialmente não realizado
           procedimento: item.procedimentos
         })) || []
       }));
@@ -592,14 +592,21 @@ export function VisualizarPacienteModal({ open, onOpenChange, pacienteId }: Visu
                   <div className="space-y-4">
                     {orcamentos.map((orcamento, orcamentoIndex) => (
                       <div key={orcamento.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="font-medium">Evolução #{orcamento.numero_orcamento}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(orcamento.created_at).toLocaleDateString('pt-BR')}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
+                         <div className="flex items-center justify-between mb-3">
+                           <div>
+                             <div className="flex items-center gap-2">
+                               <p className="font-medium">Evolução #{orcamento.numero_orcamento}</p>
+                               {orcamento.arquivado && (
+                                 <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                   Arquivado
+                                 </Badge>
+                               )}
+                             </div>
+                             <p className="text-sm text-muted-foreground">
+                               {new Date(orcamento.created_at).toLocaleDateString('pt-BR')}
+                             </p>
+                           </div>
+                           <div className="flex items-center gap-2">
                             {getStatusBadge(orcamento.status)}
                             <Button
                               variant="outline"

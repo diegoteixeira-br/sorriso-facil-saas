@@ -329,6 +329,7 @@ export type Database = {
       orcamento_itens: {
         Row: {
           created_at: string
+          data_realizacao: string | null
           dente: number | null
           id: string
           observacoes: string | null
@@ -336,9 +337,11 @@ export type Database = {
           preco_unitario: number
           procedimento_id: string
           quantidade: number | null
+          realizado: boolean
         }
         Insert: {
           created_at?: string
+          data_realizacao?: string | null
           dente?: number | null
           id?: string
           observacoes?: string | null
@@ -346,9 +349,11 @@ export type Database = {
           preco_unitario: number
           procedimento_id: string
           quantidade?: number | null
+          realizado?: boolean
         }
         Update: {
           created_at?: string
+          data_realizacao?: string | null
           dente?: number | null
           id?: string
           observacoes?: string | null
@@ -356,6 +361,7 @@ export type Database = {
           preco_unitario?: number
           procedimento_id?: string
           quantidade?: number | null
+          realizado?: boolean
         }
         Relationships: [
           {
