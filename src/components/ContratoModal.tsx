@@ -66,19 +66,23 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
   const loadContratoData = async () => {
     setLoading(true);
     try {
+      console.log('Loading contract data for:', { orcamentoId, planoId });
+      
       // Buscar dados da clínica
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('clinic_name, cnpj, endereco, phone')
         .eq('user_id', user?.id)
         .single();
+
+      console.log('Profile data:', profile, 'Error:', profileError);
 
       let orcamento = null;
       let plano = null;
 
       if (orcamentoId) {
         // Buscar orçamento e seus itens
-        const { data: orcamentoData } = await supabase
+        const { data: orcamentoData, error: orcamentoError } = await supabase
           .from('orcamentos')
           .select(`
             numero_orcamento,
@@ -95,30 +99,19 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
           .eq('id', orcamentoId)
           .maybeSingle();
 
+        console.log('Orcamento data:', orcamentoData, 'Error:', orcamentoError);
         orcamento = orcamentoData;
       }
 
       if (planoId) {
-        // Buscar plano de pagamento e o orçamento relacionado
-        const { data: planoData } = await supabase
+        // Buscar plano de pagamento primeiro
+        const { data: planoData, error: planoError } = await supabase
           .from('planos_pagamento')
-          .select(`
-            *,
-            paciente:pacientes(nome, cpf, telefone, endereco),
-            orcamento:orcamentos(
-              numero_orcamento,
-              valor_total,
-              itens:orcamento_itens(
-                quantidade,
-                preco_unitario,
-                dente,
-                observacoes,
-                procedimento:procedimentos(nome)
-              )
-            )
-          `)
+          .select('*')
           .eq('id', planoId)
           .maybeSingle();
+
+        console.log('Plano data:', planoData, 'Error:', planoError);
 
         if (planoData) {
           plano = {
@@ -129,26 +122,67 @@ export const ContratoModal: React.FC<ContratoModalProps> = ({
             forma_pagamento_parcelas: planoData.forma_pagamento_parcelas
           };
 
-          if (planoData.orcamento) {
-            orcamento = {
-              numero_orcamento: planoData.orcamento.numero_orcamento,
-              valor_total: planoData.valor_total,
-              paciente: planoData.paciente,
-              itens: planoData.orcamento.itens || []
-            };
-          } else {
+          // Buscar paciente
+          const { data: pacienteData, error: pacienteError } = await supabase
+            .from('pacientes')
+            .select('nome, cpf, telefone, endereco')
+            .eq('id', planoData.paciente_id)
+            .maybeSingle();
+
+          console.log('Paciente data:', pacienteData, 'Error:', pacienteError);
+
+          // Buscar orçamento se existe
+          if (planoData.orcamento_id) {
+            const { data: orcamentoData, error: orcamentoError } = await supabase
+              .from('orcamentos')
+              .select(`
+                numero_orcamento,
+                valor_total
+              `)
+              .eq('id', planoData.orcamento_id)
+              .maybeSingle();
+
+            console.log('Orcamento from plano:', orcamentoData, 'Error:', orcamentoError);
+
+            // Buscar itens do orçamento
+            const { data: itensData, error: itensError } = await supabase
+              .from('orcamento_itens')
+              .select(`
+                quantidade,
+                preco_unitario,
+                dente,
+                observacoes,
+                procedimento:procedimentos(nome)
+              `)
+              .eq('orcamento_id', planoData.orcamento_id);
+
+            console.log('Itens data:', itensData, 'Error:', itensError);
+
+            if (orcamentoData && pacienteData) {
+              orcamento = {
+                numero_orcamento: orcamentoData.numero_orcamento,
+                valor_total: planoData.valor_total,
+                paciente: pacienteData,
+                itens: itensData || []
+              };
+            }
+          } else if (pacienteData) {
             // Se não encontrar orçamento vinculado, criar um básico
             orcamento = {
               numero_orcamento: `PLANO-${planoId.slice(-8)}`,
               valor_total: planoData.valor_total,
-              paciente: planoData.paciente,
+              paciente: pacienteData,
               itens: []
             };
           }
         }
       }
 
+      console.log('Final orcamento data:', orcamento);
+      console.log('Final plano data:', plano);
+
       if (!orcamento) {
+        console.error('No orcamento data found');
         toast({
           title: "Erro",
           description: "Dados do orçamento não encontrados",
