@@ -39,6 +39,7 @@ const formSchema = z.object({
   endereco: z.string().optional(),
   profissao: z.string().optional(),
   estado_civil: z.string().optional(),
+  sexo: z.string().optional(),
   responsavel: z.string().optional(),
   telefone_responsavel: z.string().optional(),
   observacoes: z.string().optional(),
@@ -69,6 +70,7 @@ export function EditarPacienteModal({ open, onOpenChange, pacienteId, onSuccess 
       endereco: "",
       profissao: "",
       estado_civil: "",
+      sexo: "",
       responsavel: "",
       telefone_responsavel: "",
       observacoes: "",
@@ -104,6 +106,7 @@ export function EditarPacienteModal({ open, onOpenChange, pacienteId, onSuccess 
           endereco: data.endereco || "",
           profissao: data.profissao || "",
           estado_civil: data.estado_civil || "",
+          sexo: data.sexo || "",
           responsavel: data.responsavel || "",
           telefone_responsavel: data.telefone_responsavel || "",
           observacoes: data.observacoes || "",
@@ -137,6 +140,7 @@ export function EditarPacienteModal({ open, onOpenChange, pacienteId, onSuccess 
           endereco: data.endereco,
           profissao: data.profissao,
           estado_civil: data.estado_civil,
+          sexo: data.sexo,
           responsavel: data.responsavel,
           telefone_responsavel: data.telefone_responsavel,
           observacoes: data.observacoes,
@@ -281,6 +285,29 @@ export function EditarPacienteModal({ open, onOpenChange, pacienteId, onSuccess 
                           <SelectItem value="divorciado">Divorciado(a)</SelectItem>
                           <SelectItem value="viuvo">Viúvo(a)</SelectItem>
                           <SelectItem value="uniao_estavel">União Estável</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="sexo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sexo</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="masculino">Masculino</SelectItem>
+                          <SelectItem value="feminino">Feminino</SelectItem>
+                          <SelectItem value="outros">Outros</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
